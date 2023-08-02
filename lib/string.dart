@@ -14,7 +14,7 @@ class StringOrd extends Ord<String> {
 
 class SemigroupConcat extends BaseSemigroup<String> {
   @override
-  String concat(String x, String y) => x + y;
+  String concat(String first, String second) => first + second;
 }
 
 class MonoidConcat extends BaseMonoid<String> {
@@ -22,7 +22,7 @@ class MonoidConcat extends BaseMonoid<String> {
   String get empty => '';
 
   @override
-  String concat(String x, String y) => x + y;
+  String concat(String first, String second) => first + second;
 }
 
 final Eq<String> eqString = StringEq();
