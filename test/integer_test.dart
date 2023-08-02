@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:functional_dart/integer.dart';
+import 'package:functional_dart/bounded.dart';
 
 void main() {
   test('IntegerEq should equate identical integers', () {
@@ -33,5 +34,34 @@ void main() {
       () {
     expect(monoidProduct.concat(3, 4), 12);
     expect(monoidProduct.concat(monoidProduct.empty, 4), 4);
+  });
+  group('BoundedInt', () {
+    test('compare should work as expected', () {
+      final bounded = boundedInt(20, 35);
+      expect(bounded.compare(25, 30), lessThan(0)); // 25 < 30
+      expect(bounded.compare(30, 25), greaterThan(0)); // 30 > 25
+      expect(bounded.compare(25, 25), 0); // 25 == 25
+    });
+
+    test('equals should work as expected', () {
+      final bounded = boundedInt(20, 35);
+      expect(bounded.equals(25, 25), isTrue); // 25 == 25
+      expect(bounded.equals(25, 30), isFalse); // 25 != 30
+    });
+
+    test('top and bottom should be set correctly', () {
+      final bounded = boundedInt(20, 35);
+      expect(bounded.top, 35);
+      expect(bounded.bottom, 20);
+    });
+
+    test('clamp should work as expected', () {
+      final bounded = boundedInt(20, 35);
+      final clampFn = clamp(bounded);
+
+      expect(clampFn(15), 20); // less than bottom
+      expect(clampFn(40), 35); // greater than top
+      expect(clampFn(25), 25); // within bounds
+    });
   });
 }
