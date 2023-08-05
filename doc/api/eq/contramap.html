@@ -59,7 +59,7 @@
     <section class="multi-line-signature">
         
 
-<span class="returntype">dynamic Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="../eq/Eq-class.html">Eq</a><span class="signature">&lt;<wbr><span class="type-parameter">B</span>&gt;</span></span></span>)</span></span>
+<span class="returntype"><a href="../eq/Eq-class.html">Eq</a><span class="signature">&lt;<wbr><span class="type-parameter">A</span>&gt;</span> Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="../eq/Eq-class.html">Eq</a><span class="signature">&lt;<wbr><span class="type-parameter">B</span>&gt;</span></span></span>)</span></span>
 <span class="name ">contramap</span>&lt;<wbr><span class="type-parameter">A</span>, <span class="type-parameter">B</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="contramap-param-f"><span class="type-annotation">B</span> <span class="parameter-name">f</span>(<ol class="parameter-list"><li><span class="parameter" id="param-a"><span class="type-annotation">A</span> <span class="parameter-name">a</span></span></li>
 </ol>
 )</span></li>
@@ -77,7 +77,7 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Function(Eq&lt;B&gt;) contramap&lt;A, B&gt;(B Function(A a) f) {
+  <pre class="language-dart"><code class="language-dart">Eq&lt;A&gt; Function(Eq&lt;B&gt;) contramap&lt;A, B&gt;(B Function(A a) f) {
   return (Eq&lt;B&gt; eqB) =&gt; _Eq&lt;A&gt;((A x, A y) =&gt; eqB.equals(f(x), f(y)));
 }</code></pre>
 </section>

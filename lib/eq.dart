@@ -52,6 +52,6 @@ BaseSemigroup<Eq<A>> getSemigroup<A>() => Semigroup<A>();
 BaseMonoid<Eq<A>> getMonoid<A>() => Monoid<A>();
 
 /// Transforms an `Eq<B>` into an `Eq<A>` using the given function.
-Function(Eq<B>) contramap<A, B>(B Function(A a) f) {
+Eq<A> Function(Eq<B>) contramap<A, B>(B Function(A a) f) {
   return (Eq<B> eqB) => _Eq<A>((A x, A y) => eqB.equals(f(x), f(y)));
 }

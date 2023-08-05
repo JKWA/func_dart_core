@@ -59,7 +59,7 @@
     <section class="multi-line-signature">
         
 
-<span class="returntype">dynamic Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span></span>)</span></span>
+<span class="returntype">T Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span></span>)</span></span>
 <span class="name ">concatAll</span>&lt;<wbr><span class="type-parameter">T</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="concatAll-param-monoid"><span class="type-annotation"><a href="../monoid/BaseMonoid-class.html">BaseMonoid</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">monoid</span></span></li>
 </ol>)
 
@@ -75,7 +75,7 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Function(List&lt;T&gt;) concatAll&lt;T&gt;(BaseMonoid&lt;T&gt; monoid) {
+  <pre class="language-dart"><code class="language-dart">T Function(List&lt;T&gt;) concatAll&lt;T&gt;(BaseMonoid&lt;T&gt; monoid) {
   return (List&lt;T&gt; as) =&gt;
       as.fold(monoid.empty, (acc, a) =&gt; monoid.concat(acc, a));
 }</code></pre>

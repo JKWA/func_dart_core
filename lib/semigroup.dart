@@ -92,7 +92,7 @@ class _ConstantSemigroup<A> extends BaseSemigroup<A> {
 }
 
 /// Creates a semigroup that concatenates elements with a specific "middle" element.
-Function(BaseSemigroup<A>) intercalate<A>(A middle) {
+BaseSemigroup<A> Function(BaseSemigroup<A>) intercalate<A>(A middle) {
   return (BaseSemigroup<A> semigroup) {
     return _IntercalateSemigroup(middle, semigroup);
   };

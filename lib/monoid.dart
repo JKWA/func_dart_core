@@ -7,7 +7,7 @@ abstract class BaseMonoid<T> extends BaseSemigroup<T> {
 }
 
 /// Returns a function that takes a list of type T and concatenates all elements in the list using the monoid
-Function(List<T>) concatAll<T>(BaseMonoid<T> monoid) {
+T Function(List<T>) concatAll<T>(BaseMonoid<T> monoid) {
   return (List<T> as) =>
       as.fold(monoid.empty, (acc, a) => monoid.concat(acc, a));
 }

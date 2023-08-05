@@ -59,7 +59,7 @@
     <section class="multi-line-signature">
         
 
-<span class="returntype">dynamic Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="../semigroup/BaseSemigroup-class.html">BaseSemigroup</a><span class="signature">&lt;<wbr><span class="type-parameter">A</span>&gt;</span></span></span>)</span></span>
+<span class="returntype"><a href="../semigroup/BaseSemigroup-class.html">BaseSemigroup</a><span class="signature">&lt;<wbr><span class="type-parameter">A</span>&gt;</span> Function<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation"><a href="../semigroup/BaseSemigroup-class.html">BaseSemigroup</a><span class="signature">&lt;<wbr><span class="type-parameter">A</span>&gt;</span></span></span>)</span></span>
 <span class="name ">intercalate</span>&lt;<wbr><span class="type-parameter">A</span>&gt;(<wbr><ol class="parameter-list"><li><span class="parameter" id="intercalate-param-middle"><span class="type-annotation">A</span> <span class="parameter-name">middle</span></span></li>
 </ol>)
 
@@ -75,7 +75,7 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Function(BaseSemigroup&lt;A&gt;) intercalate&lt;A&gt;(A middle) {
+  <pre class="language-dart"><code class="language-dart">BaseSemigroup&lt;A&gt; Function(BaseSemigroup&lt;A&gt;) intercalate&lt;A&gt;(A middle) {
   return (BaseSemigroup&lt;A&gt; semigroup) {
     return _IntercalateSemigroup(middle, semigroup);
   };
