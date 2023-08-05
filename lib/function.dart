@@ -1,5 +1,7 @@
 import 'semigroup.dart';
 
+typedef LazyArg<A> = A Function();
+
 class FunctionWrapper<S, A> {
   final S Function(A) func;
 
@@ -24,3 +26,5 @@ class _FunctionSemigroup<S, A> extends BaseSemigroup<FunctionWrapper<S, A>> {
     return FunctionWrapper((A a) => semigroup.concat(f(a), g(a)));
   }
 }
+
+A identity<A>(A a) => a;
