@@ -1,12 +1,23 @@
 import "package:functional_dart/ord.dart";
 
+/// Defines a bounded type `A` which extends the `Ord` type.
+///
+/// A bounded type has an upper and lower limit.
 abstract class Bounded<A> extends Ord<A> {
   Bounded(int Function(A x, A y) compare) : super(compare);
 
+  /// The upper bound of type `A`.
   A get top;
+
+  /// The lower bound of type `A`.
   A get bottom;
 }
 
+/// Returns a function that clamps a value of type `A` within its bounds.
+///
+/// The function will return the `bottom` if the value is less than the lower
+/// bound and the `top` if it is greater than the upper bound. If the value is
+/// within the bounds, it will be returned as is.
 A Function(A) clamp<A>(Bounded<A> bounded) {
   return (A a) {
     if (bounded.compare(a, bounded.bottom) < 0) {
@@ -19,18 +30,27 @@ A Function(A) clamp<A>(Bounded<A> bounded) {
   };
 }
 
+/// Returns a `Bounded<A>` with its bounds reversed.
+///
+/// The `top` of the original bounded object becomes the `bottom` of the
+/// reversed one and vice versa.
 Bounded<A> reverse<A>(Bounded<A> bounded) {
   return _ReversedBounded<A>(bounded);
 }
 
 class _ReversedBounded<A> extends Bounded<A> {
+  /// The original bounded object.
   final Bounded<A> original;
 
   _ReversedBounded(this.original) : super((A x, A y) => original.compare(y, x));
 
   @override
+
+  /// The lower bound of the reversed bounded object, which is the `top` of the original one.
   A get top => original.bottom;
 
   @override
+
+  /// The upper bound of the reversed bounded object, which is the `bottom` of the original one.
   A get bottom => original.top;
 }
