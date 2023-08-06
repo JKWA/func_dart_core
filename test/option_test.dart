@@ -41,4 +41,63 @@ void main() {
     expect(resultNoneF is None<int>, true);
     expect(resultNoneM is None<int>, true);
   });
+
+  group('match', () {
+    test(
+        'should return the result of applying the Some function when called with Some',
+        () {
+      final option = Some<int>(5);
+      final result = match<int, String>(
+          () => 'Nothing here', (value) => 'The value is $value')(option);
+      expect(result, equals('The value is 5'));
+    });
+
+    test(
+        'should return the result of applying the None function when called with None',
+        () {
+      final option = None<int>();
+      final result = match<int, String>(
+          () => 'Nothing here', (value) => 'The value is $value')(option);
+      expect(result, equals('Nothing here'));
+    });
+
+    test('should handle Some values and different result types correctly', () {
+      final option = Some<String>('Hello');
+      final result =
+          match<String, int>(() => 0, (value) => value.length)(option);
+      expect(result, equals(5));
+    });
+
+    test('should handle None values and different result types correctly', () {
+      final option = None<String>();
+      final result =
+          match<String, int>(() => 0, (value) => value.length)(option);
+      expect(result, equals(0));
+    });
+  });
+
+  group('getOrElse', () {
+    test('should return the value if it is a Some', () {
+      final option = Some(5);
+      expect(getOrElse(option, () => 10), equals(5));
+    });
+
+    test('should return the result of the defaultFunction if it is a None', () {
+      final option = None<int>();
+      expect(getOrElse(option, () => 10), equals(10));
+    });
+
+    test('should lazily invoke defaultFunction', () {
+      bool functionWasCalled = false;
+
+      int defaultFunction() {
+        functionWasCalled = true;
+        return 10;
+      }
+
+      final option = Some(5);
+      getOrElse(option, defaultFunction);
+      expect(functionWasCalled, isFalse);
+    });
+  });
 }
