@@ -180,7 +180,7 @@ Option<B> ap<A, B>(Option<B Function(A)> fOpt, Option<A> m) {
   });
 }
 
-/// The [tap] function takes a side effect function [f] that is applied to the value
+/// The [tap] function takes a side effect function [Function] that is applied to the value
 /// inside the [Some] instance of [Option]. It returns the original [Option] after
 /// performing the side effect on the value. If the input [Option] is [None], the
 /// function simply returns the same [None].
@@ -238,6 +238,11 @@ TapFunction<A> tap<A>(void Function(A) f) {
     return option;
   };
 }
+
+/// Alias for [tap].
+///
+/// Provides a side effect function [Function] that is applied to the value
+final chainFirst = tap;
 
 /// A function to process an `Option` value. If [Option] is an instance of `Some`,
 /// the function [onSome] will be invoked with the encapsulated value.
