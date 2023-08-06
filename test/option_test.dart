@@ -100,4 +100,62 @@ void main() {
       expect(functionWasCalled, isFalse);
     });
   });
+  group('fromPredicate', () {
+    bool isEven(int value) => value % 2 == 0;
+    bool containsSubstr(String value) => value.contains('test');
+
+    test('should return Some(value) when predicate is true', () {
+      final evenOption = fromPredicate(isEven, 4);
+
+      expect(evenOption, isA<Some<int>>());
+      expect((evenOption as Some).value, equals(4));
+    });
+
+    test('should return None when predicate is false', () {
+      final oddOption = fromPredicate(isEven, 5);
+
+      expect(oddOption, isA<None<int>>());
+    });
+
+    test('should return Some(value) when string contains a substring', () {
+      final stringOption = fromPredicate(containsSubstr, 'dart test');
+
+      expect(stringOption, isA<Some<String>>());
+      expect((stringOption as Some).value, equals('dart test'));
+    });
+
+    test('should return None when string does NOT contain a substring', () {
+      final stringOption = fromPredicate(containsSubstr, 'dart');
+
+      expect(stringOption, isA<None<String>>());
+    });
+  });
+
+  group('fromNullable', () {
+    test('should return Some(value) when value is not null', () {
+      final someOption = fromNullable(42);
+
+      expect(someOption, isA<Some<int>>());
+      expect((someOption as Some).value, equals(42));
+    });
+
+    test('should return None when value is null', () {
+      final noneOption = fromNullable<int>(null);
+
+      expect(noneOption, isA<None<int>>());
+    });
+
+    test('should return Some(value) when value is non-null string', () {
+      final stringOption = fromNullable('test string');
+
+      expect(stringOption, isA<Some<String>>());
+      expect((stringOption as Some).value, equals('test string'));
+    });
+
+    test('should return None when value is null string', () {
+      final stringOption = fromNullable<String>(null);
+
+      expect(stringOption, isA<None<String>>());
+    });
+  });
 }
