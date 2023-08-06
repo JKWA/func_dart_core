@@ -4,6 +4,8 @@ linter:
   rules:
     - camel_case_types
     - directives_ordering
+    - comment_references
+    - always_declare_return_types
 
 analyzer:
   language:

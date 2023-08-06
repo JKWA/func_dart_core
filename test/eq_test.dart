@@ -11,8 +11,8 @@ class Person {
 typedef UserRecord = ({String name, int age});
 
 void main() {
-  getUserName(UserRecord u) => u.name;
-  getUserAge(UserRecord u) => u.age;
+  String getUserName(UserRecord u) => u.name;
+  int getUserAge(UserRecord u) => u.age;
 
   final eqStringLength = contramap<String, int>((s) => s.length)(eqInt);
 

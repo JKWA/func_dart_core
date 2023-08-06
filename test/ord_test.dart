@@ -9,8 +9,8 @@ void main() {
   UserRecord bob = (name: "Bob", age: 25);
   UserRecord dave = (name: "Dave", age: 23);
   UserRecord john = (name: "John", age: 21);
-  getUserName(UserRecord u) => u.name;
-  getUserAge(UserRecord u) => u.age;
+  String getUserName(UserRecord u) => u.name;
+  int getUserAge(UserRecord u) => u.age;
   final ordName = contramap(getUserName)(ordString);
   final ordAge = contramap(getUserAge)(ordInt);
 
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('contramap', () {
-      stringToInt(String s) => int.parse(s);
+      int stringToInt(String s) => int.parse(s);
       final ordString = contramap<String, int>(stringToInt)(ordInt);
       expect(ordString.compare("5", "10"), -1);
     });

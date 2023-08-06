@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('match', () {
     test('should call the correct function based on the boolean value', () {
-      onFalse() => 'False Branch';
-      onTrue() => 'True Branch';
+      String onFalse() => 'False Branch';
+      String onTrue() => 'True Branch';
 
       expect(match(onFalse, onTrue)(false), 'False Branch');
       expect(match(onFalse, onTrue)(true), 'True Branch');
@@ -15,8 +15,8 @@ void main() {
     test(
         ' should call the correct function based on the boolean value with widened types',
         () {
-      onFalse() => 'False Branch';
-      onTrue() => 42;
+      String onFalse() => 'False Branch';
+      int onTrue() => 42;
 
       expect(matchW(onFalse, onTrue)(false), 'False Branch');
       expect(matchW(onFalse, onTrue)(true), 42);
