@@ -1,4 +1,6 @@
 import 'package:functional_dart/predicate.dart';
+import 'package:functional_dart/eq.dart';
+import 'package:functional_dart/ord.dart';
 
 /// `Option` is a type representing the presence or absence of a value `A`.
 /// This class is part of the Option type system used in functional programming
@@ -299,4 +301,109 @@ A getOrElse<A>(Option<A> option, A Function() defaultFunction) {
     return option.value;
   }
   return defaultFunction();
+}
+
+/// Defines equality for instances of `Option`.
+///
+/// The equality of two `Option` instances depends on the equality of the values
+/// they contain (if any). For this purpose, this class requires an instance of
+/// `Eq<A>` for the type of the values the `Option` might hold.
+///
+/// ```dart
+/// final intEq = Eq.fromEquals((int x, int y) => x == y);
+/// final optionEq = getEq(intEq);
+///
+/// expect(optionEq.equals(Some(1), Some(1)), true);
+/// expect(optionEq.equals(Some(1), Some(2)), false);
+/// expect(optionEq.equals(Some(1), None()), false);
+/// expect(optionEq.equals(None(), None()), true);
+/// ```
+class OptionEq<A> implements Eq<Option<A>> {
+  /// The `Eq` instance for the type of the values the `Option` might hold.
+  final Eq<A> eq;
+
+  /// Constructs an instance of `OptionEq`.
+  ///
+  /// Requires an instance of `Eq<A>`.
+  OptionEq(this.eq);
+
+  @override
+  bool equals(Option<A> x, Option<A> y) {
+    // Short-circuit if they are identical (or both null).
+    if (identical(x, y)) return true;
+
+    // If both are None, they are equal.
+    if (x is None<A> && y is None<A>) return true;
+
+    // If both are Some, delegate to the contained Eq<A>.
+    if (x is Some<A> && y is Some<A>) return eq.equals(x.value, y.value);
+
+    // In all other cases they are not equal.
+    return false;
+  }
+}
+
+/// Returns an `Eq` for `Option<A>`, given an `Eq<A>`.
+///
+/// ```dart
+/// final intEq = Eq.fromEquals((int x, int y) => x == y);
+/// final optionEq = getEq(intEq);
+///
+/// expect(optionEq.equals(Some(1), Some(1)), true);
+/// expect(optionEq.equals(Some(1), Some(2)), false);
+/// expect(optionEq.equals(Some(1), None()), false);
+/// expect(optionEq.equals(None(), None()), true);
+/// ```
+Eq<Option<A>> getEq<A>(Eq<A> eq) {
+  return OptionEq<A>(eq);
+}
+
+/// `OptionOrd` extends `Ord<Option<A>>`, which is a type that provides
+/// comparison and ordering functionalities for `Option` instances.
+///
+/// It is parameterized by `A`, the type of element contained in the `Option`.
+///
+/// Equality is determined by the `eq` instance passed into `OptionOrd`'s constructor,
+/// and comparison is determined by the order of the options: `None` is considered
+/// less than `Some`, and for two `Some` instances, comparison is done based on the
+/// values they contain.
+class OptionOrd<A> extends Ord<Option<A>> {
+  final Ord<A> ord;
+
+  OptionOrd(this.ord)
+      : super((Option<A> x, Option<A> y) {
+          if (identical(x, y)) return 0;
+
+          if (x is None<A> && y is None<A>) return 0;
+
+          if (x is None<A> && y is Some<A>) return -1;
+
+          if (x is Some<A> && y is None<A>) return 1;
+
+          if (x is Some<A> && y is Some<A>)
+            return ord.compare(x.value, y.value);
+
+          throw StateError('Unreachable state');
+        });
+
+  @override
+  bool equals(Option<A> x, Option<A> y) => compare(x, y) == 0;
+}
+
+/// Returns an `Ord<Option<A>>` based on the provided `Ord<A>`.
+///
+/// Example usage:
+/// ```dart
+/// final ordInt = Ord.fromCompare((int x, int y) => x.compareTo(y));
+/// final optionOrdInt = getOrd(ordInt);
+///
+/// assert(optionOrdInt.compare(Some(2), Some(3)) < 0);
+/// assert(optionOrdInt.compare(Some(3), Some(2)) > 0);
+/// assert(optionOrdInt.compare(Some(2), Some(2)) == 0);
+/// assert(optionOrdInt.compare(None(), Some(2)) < 0);
+/// assert(optionOrdInt.compare(Some(2), None()) > 0);
+/// assert(optionOrdInt.compare(None(), None()) == 0);
+/// ```
+Ord<Option<A>> getOrd<A>(Ord<A> ord) {
+  return OptionOrd<A>(ord);
 }

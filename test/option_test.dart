@@ -1,5 +1,7 @@
+import 'package:functional_dart/eq.dart';
 import 'package:functional_dart/option.dart';
 import 'package:test/test.dart';
+import 'package:functional_dart/integer.dart';
 
 void main() {
   test('Option of constructs Some', () {
@@ -199,6 +201,73 @@ void main() {
       Option<String> tappedOption = printString(noneOption);
 
       expect(tappedOption, noneOption);
+    });
+  });
+  group('OptionEq', () {
+    test('should return true when both options are None', () {
+      final eq = getEq(eqInt);
+
+      expect(eq.equals(None(), None()), isTrue);
+    });
+
+    test('should return false when one option is None and the other is Some',
+        () {
+      final eq = getEq(eqInt);
+
+      expect(eq.equals(None(), Some(1)), isFalse);
+      expect(eq.equals(Some(1), None()), isFalse);
+    });
+
+    test('should return true when both options are Some and values are equal',
+        () {
+      final eq = getEq(eqInt);
+
+      expect(eq.equals(Some(1), Some(1)), isTrue);
+    });
+
+    test(
+        'should return false when both options are Some and values are not equal',
+        () {
+      final eq = getEq(eqInt);
+
+      expect(eq.equals(Some(1), Some(2)), isFalse);
+    });
+  });
+
+  group('OptionOrd', () {
+    final optionOrdInt = getOrd(ordInt);
+
+    test('compare should return 0 when both options are None', () {
+      expect(optionOrdInt.compare(None(), None()), 0);
+    });
+
+    test(
+        'compare should return -1 when first option is None and second is Some',
+        () {
+      expect(optionOrdInt.compare(None(), Some(1)), -1);
+    });
+
+    test('compare should return 1 when first option is Some and second is None',
+        () {
+      expect(optionOrdInt.compare(Some(1), None()), 1);
+    });
+
+    test(
+        'compare should return 0 when both options are Some and values are equal',
+        () {
+      expect(optionOrdInt.compare(Some(1), Some(1)), 0);
+    });
+
+    test(
+        'compare should return a negative number when both options are Some and first value is less than second',
+        () {
+      expect(optionOrdInt.compare(Some(1), Some(2)), lessThan(0));
+    });
+
+    test(
+        'compare should return a positive number when both options are Some and first value is greater than second',
+        () {
+      expect(optionOrdInt.compare(Some(2), Some(1)), greaterThan(0));
     });
   });
 }
