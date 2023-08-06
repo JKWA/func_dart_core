@@ -24,6 +24,11 @@ class None<A> extends Option<A> {
 }
 
 /// Wraps the given [value] in a `Some`, indicating the presence of a value.
+///
+/// Example usage:
+/// ```dart
+/// final someOption = of(42);  // This will be Some(42)
+/// ```
 Option<B> of<B>(B value) {
   return Some<B>(value);
 }
@@ -73,6 +78,13 @@ Option<A> fromNullable<A>(A? value) {
 /// Applies the function [f] to the value in the `Option` [option],
 /// if it is a `Some`. If [option] is `None`, returns `None`.
 /// This operation is known as 'map' in functional programming.
+///
+/// Example usage:
+/// ```dart
+/// final option1 = Some(5);
+/// final option2 = map(option1, (value) => value * 2);  // This will be Some(10)
+/// final option3 = map(None(), (value) => value * 2);  // This will be None
+/// ```
 Option<B> map<A, B>(Option<A> option, B Function(A) f) {
   if (option is Some<A>) {
     return Some<B>(f(option.value));
@@ -85,6 +97,13 @@ Option<B> map<A, B>(Option<A> option, B Function(A) f) {
 /// if it is a `Some`, and assumes [f] returns an `Option`.
 /// If [option] is `None`, returns `None`.
 /// This operation is known as 'flatMap', 'chain', or 'bind' in functional programming.
+///
+/// Example usage:
+/// ```dart
+/// final option1 = Some(5);
+/// final option2 = flatMap(option1, (value) => Some(value * 2));  // This will be Some(10)
+/// final option3 = flatMap(None(), (value) => Some(value * 2));  // This will be None
+/// ```
 Option<B> flatMap<A, B>(Option<A> option, Option<B> Function(A) f) {
   if (option is Some<A>) {
     return f(option.value);
@@ -94,12 +113,21 @@ Option<B> flatMap<A, B>(Option<A> option, Option<B> Function(A) f) {
 }
 
 /// Alias for [flatMap].
+///
+/// Provides a way to handle an [Option] by chaining function calls.
 final chain = flatMap;
 
 /// Applies the function wrapped in an `Option` [fOpt] to the value in the `Option` [m],
 /// if both [fOpt] and [m] are `Some`, and wraps the result in an `Option`.
 /// If either [fOpt] or [m] is `None`, returns `None`.
 /// This operation is known as 'ap' or 'apply' in functional programming.
+///
+/// Example usage:
+/// ```dart
+/// final option1 = Some((value) => value * 2);
+/// final option2 = Some(5);
+/// final option3 = ap(option1, option2);  // This will be Some(10)
+/// ```
 Option<B> ap<A, B>(Option<B Function(A)> fOpt, Option<A> m) {
   return flatMap(fOpt, (B Function(A) f) {
     return map(m, f);
@@ -110,8 +138,24 @@ Option<B> ap<A, B>(Option<B Function(A)> fOpt, Option<A> m) {
 /// the function [onSome] will be invoked with the encapsulated value.
 /// If [Option] is `None`, then [onNone] will be called.
 ///
+/// In Dart, you can't use a switch statement to check if a value is an instance
+/// of a generic class.
+///
+/// Generic classes in Dart are a compile-time concept that get "erased" at runtime,
+/// they aren't preserved in a way that would allow them to be checked using a
+/// switch statement or similar construct. This is known as type erasure.
+///
 /// This is a form of pattern matching adapted for Dart.
 /// The returned function takes an `Option<A>` and returns a value of type `B`.
+///
+/// Example usage:
+/// ```dart
+/// final option1 = Some(5);
+/// final option2 = None();
+/// final matchFn = match(() => "It's None", (value) => "It's Some with value: $value");
+/// print(matchFn(option1));  // Prints: It's Some with value: 5
+/// print(matchFn(option2));  // Prints: It's None
+/// ```
 B Function(Option<A>) match<A, B>(B Function() onNone, B Function(A) onSome) {
   return (Option<A> option) {
     if (option is Some<A>) {
