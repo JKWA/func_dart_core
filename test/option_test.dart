@@ -158,4 +158,47 @@ void main() {
       expect(stringOption, isA<None<String>>());
     });
   });
+  group('type refinements', () {
+    test('isNone function with different types', () {
+      Option<double> someOption = Some(3.14);
+      Option<int> noneOption = const None();
+      Option<List<int>> anotherNoneOption = const None();
+
+      expect(isNone(someOption), false);
+      expect(isNone(noneOption), true);
+      expect(isNone(anotherNoneOption), true);
+    });
+    test('isSome function with different types', () {
+      Option<double> someOption = Some(3.14);
+      Option<int> noneOption = const None();
+      Option<List<int>> anotherNoneOption = const None();
+
+      expect(isSome(someOption), true);
+      expect(isSome(noneOption), false);
+      expect(isSome(anotherNoneOption), false);
+    });
+  });
+  group('tap', () {
+    test('tap with Some', () {
+      Option<String> someOption = Some("Hello");
+
+      final printString =
+          tap<String>((value) => print("Value inside Some: $value"));
+
+      Option<String> tappedOption = printString(someOption);
+
+      expect(tappedOption, someOption);
+    });
+
+    test('tap with None', () {
+      Option<String> noneOption = const None();
+
+      final printString =
+          tap<String>((value) => print("Value inside None: $value"));
+
+      Option<String> tappedOption = printString(noneOption);
+
+      expect(tappedOption, noneOption);
+    });
+  });
 }

@@ -33,6 +33,52 @@ Option<B> of<B>(B value) {
   return Some<B>(value);
 }
 
+/// A type refinement function to check if an [option] is of type `None`.
+///
+/// Example:
+/// ```dart
+/// Option<String> someOption = Some("Hello");
+/// Option<int> noneOption = const None();
+///
+/// if (isNone(someOption)) {
+///   print("This will not be executed because 'someOption' is not None.");
+/// } else {
+///   print("This will be executed because 'someOption' is not None.");
+/// }
+///
+/// if (isNone(noneOption)) {
+///   print("This will be executed because 'noneOption' is None.");
+/// } else {
+///   print("This will not be executed because 'noneOption' is None.");
+/// }
+/// ```
+bool isNone<A>(Option<A> option) {
+  return option is None<A>;
+}
+
+/// A refinement function to check if an [option] is of type `Some`.
+///
+/// Example:
+/// ```dart
+/// Option<String> someOption = Some("Hello");
+/// Option<int> noneOption = const None();
+///
+/// if (isSome(someOption)) {
+///   print("This will be executed because 'someOption' is Some.");
+/// } else {
+///   print("This will not be executed because 'someOption' is Some.");
+/// }
+///
+/// if (isSome(noneOption)) {
+///   print("This will not be executed because 'noneOption' is not Some.");
+/// } else {
+///   print("This will be executed because 'noneOption' is not Some.");
+/// }
+/// ```
+bool isSome<A>(Option<A> option) {
+  return option is Some<A>;
+}
+
 /// Returns an [Option] based on the evaluation of a [Predicate] on a value.
 ///
 /// This function takes in a predicate (a function that returns a boolean) and
@@ -132,6 +178,65 @@ Option<B> ap<A, B>(Option<B Function(A)> fOpt, Option<A> m) {
   return flatMap(fOpt, (B Function(A) f) {
     return map(m, f);
   });
+}
+
+/// The [tap] function takes a side effect function [f] that is applied to the value
+/// inside the [Some] instance of [Option]. It returns the original [Option] after
+/// performing the side effect on the value. If the input [Option] is [None], the
+/// function simply returns the same [None].
+///
+/// This function allows you to perform side effects like printing or logging the
+/// value inside [Some] without changing the value itself.
+///
+/// The [tap] function is commonly used in functional programming to observe values
+/// in a container without modifying them.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   Option<String> someOption = Some("Hello");
+///   Option<String> noneOption = const None();
+///
+///   // Printing the value inside Some without modifying the value
+///   tap<String>((value) => print("Value inside Some: $value"))(someOption); // Output: Value inside Some: Hello
+///
+///   // Since it's None, nothing will be printed
+///   tap<String>((value) => print("Value inside None: $value"))(noneOption); // No output
+/// }
+/// ```
+typedef TapFunction<A> = Option<A> Function(Option<A> option);
+
+/// Curries the [tap] function by taking a side effect function [f]. It returns a
+/// specialized version of the [tap] function that can be used to apply the side
+/// effect on an [Option<A>] instance directly without specifying the side effect
+/// function again.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   Option<String> someOption = Some("Hello");
+///   Option<String> noneOption = const None();
+///
+///   // Create a specialized version of tap for printing strings
+///   final printString = tap<String>((value) => print("Value inside Some: $value"));
+///
+///   // Use the specialized version of tap to print the value inside the Some
+///   printString(someOption); // Output: Value inside Some: Hello
+///
+///   // Use the same specialized version of tap to print the value inside the None
+///   printString(noneOption); // No output
+/// }
+/// ```
+TapFunction<A> tap<A>(void Function(A) f) {
+  return (Option<A> option) {
+    if (option is Some<A>) {
+      final Some<A> some = option;
+      f(some.value);
+    }
+    return option;
+  };
 }
 
 /// A function to process an `Option` value. If [Option] is an instance of `Some`,
