@@ -1,6 +1,7 @@
+import 'package:functional_dart/integer.dart';
 import 'package:functional_dart/ord.dart';
 import 'package:functional_dart/string.dart';
-import 'package:functional_dart/integer.dart';
+
 import 'a_user_record.dart';
 
 // Define ordering based on different attributes.

@@ -1,5 +1,5 @@
-import 'semigroup.dart';
 import 'bounded.dart';
+import 'semigroup.dart';
 
 /// Base Monoid abstract class, extends BaseSemigroup with an `empty` getter
 abstract class BaseMonoid<T> extends BaseSemigroup<T> {

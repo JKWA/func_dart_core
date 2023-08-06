@@ -1,8 +1,9 @@
-import 'package:functional_dart/eq.dart';
-import 'package:functional_dart/string.dart';
-import 'package:functional_dart/integer.dart';
-import 'a_user_record.dart';
 import 'package:functional_dart/boolean.dart';
+import 'package:functional_dart/eq.dart';
+import 'package:functional_dart/integer.dart';
+import 'package:functional_dart/string.dart';
+
+import 'a_user_record.dart';
 
 UserRecord dave = (name: "Dave", age: 23);
 UserRecord john = (name: "John", age: 23);

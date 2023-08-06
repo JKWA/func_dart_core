@@ -1,5 +1,5 @@
-import 'package:functional_dart/monoid.dart';
 import 'package:functional_dart/integer.dart';
+import 'package:functional_dart/monoid.dart';
 import 'package:functional_dart/string.dart';
 
 // The Monoid is the same as a Semigroup, but it includes a concept of 'empty'

@@ -1,6 +1,7 @@
 import 'package:functional_dart/eq.dart';
-import 'package:functional_dart/string.dart';
 import 'package:functional_dart/integer.dart';
+import 'package:functional_dart/string.dart';
+
 import 'a_user_record.dart';
 
 // A contramap takes a function to transform the input before it is processed

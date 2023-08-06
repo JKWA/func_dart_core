@@ -1,5 +1,5 @@
-import 'semigroup.dart';
 import 'monoid.dart';
+import 'semigroup.dart';
 
 /// Defines an equality relation on a type `A`.
 abstract class Eq<A> {

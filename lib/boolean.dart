@@ -1,8 +1,8 @@
-import "package:functional_dart/function.dart";
 import "package:functional_dart/eq.dart";
-import "package:functional_dart/semigroup.dart";
+import "package:functional_dart/function.dart";
 import "package:functional_dart/monoid.dart";
 import "package:functional_dart/ord.dart";
+import "package:functional_dart/semigroup.dart";
 
 /// Returns a function that depending on the provided [bool] value,
 /// invokes and returns the result of either [onFalse] or [onTrue] function.

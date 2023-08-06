@@ -1,6 +1,6 @@
-import 'package:test/test.dart';
 import 'package:functional_dart/function.dart';
 import 'package:functional_dart/string.dart' as s;
+import 'package:test/test.dart';
 
 void main() {
   group('Semigroup', () {

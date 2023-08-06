@@ -1,5 +1,5 @@
-import 'package:test/test.dart' hide isEmpty, startsWith, endsWith;
 import 'package:functional_dart/string.dart';
+import 'package:test/test.dart' hide isEmpty, startsWith, endsWith;
 
 void main() {
   group('String', () {

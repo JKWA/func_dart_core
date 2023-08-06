@@ -1,6 +1,6 @@
-import 'package:test/test.dart';
-import 'package:functional_dart/integer.dart';
 import 'package:functional_dart/bounded.dart';
+import 'package:functional_dart/integer.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('IntegerEq should equate identical integers', () {

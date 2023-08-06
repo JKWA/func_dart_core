@@ -1,8 +1,8 @@
+import 'bounded.dart';
 import "eq.dart";
 import 'monoid.dart';
 import 'ord.dart';
 import 'semigroup.dart';
-import 'bounded.dart';
 
 /// An equality instance for integer type.
 class IntegerEq extends Eq<int> {

@@ -1,8 +1,9 @@
 import 'package:functional_dart/eq.dart' as eq;
 import 'package:functional_dart/ord.dart' as ord;
+
+import 'a_user_record.dart';
 import 'b_eq.dart';
 import 'c_ord.dart';
-import 'a_user_record.dart';
 
 // semigroup is an abstraction that combines things together
 // this example abstracts concepts from eq_example and ord_example

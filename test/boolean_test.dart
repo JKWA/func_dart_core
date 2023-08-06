@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:functional_dart/boolean.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('match', () {

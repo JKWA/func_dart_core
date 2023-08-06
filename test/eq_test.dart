@@ -1,6 +1,6 @@
-import 'package:test/test.dart';
 import 'package:functional_dart/eq.dart';
 import 'package:functional_dart/integer.dart';
+import 'package:test/test.dart';
 
 class Person {
   final String name;

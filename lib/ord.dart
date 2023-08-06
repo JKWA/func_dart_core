@@ -1,6 +1,6 @@
-import 'eq.dart' as eq;
-import './semigroup.dart';
 import './monoid.dart';
+import './semigroup.dart';
+import 'eq.dart' as eq;
 
 /// Defines an order relation for type A.
 abstract class Ord<A> extends eq.Eq<A> {

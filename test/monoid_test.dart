@@ -1,8 +1,8 @@
-import 'package:test/test.dart';
-import 'package:functional_dart/monoid.dart';
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/string.dart';
 import 'package:functional_dart/bounded.dart' hide reverse;
+import 'package:functional_dart/integer.dart';
+import 'package:functional_dart/monoid.dart';
+import 'package:functional_dart/string.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('concatAll', () {
