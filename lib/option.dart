@@ -1,6 +1,6 @@
-import 'package:functional_dart/predicate.dart';
 import 'package:functional_dart/eq.dart';
 import 'package:functional_dart/ord.dart';
+import 'package:functional_dart/predicate.dart';
 
 /// `Option` is a type representing the presence or absence of a value `A`.
 /// This class is part of the Option type system used in functional programming
@@ -380,8 +380,9 @@ class OptionOrd<A> extends Ord<Option<A>> {
 
           if (x is Some<A> && y is None<A>) return 1;
 
-          if (x is Some<A> && y is Some<A>)
+          if (x is Some<A> && y is Some<A>) {
             return ord.compare(x.value, y.value);
+          }
 
           throw StateError('Unreachable state');
         });

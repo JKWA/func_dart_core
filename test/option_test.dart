@@ -1,7 +1,6 @@
-import 'package:functional_dart/eq.dart';
+import 'package:functional_dart/integer.dart';
 import 'package:functional_dart/option.dart';
 import 'package:test/test.dart';
-import 'package:functional_dart/integer.dart';
 
 void main() {
   test('Option of constructs Some', () {
