@@ -110,3 +110,8 @@ TapFunction<A> tap<A>(void Function(A) f) {
     return task;
   };
 }
+
+/// Alias for [tap].
+///
+/// Provides a side effect function [Function] that is applied to the value
+final chainFirst = tap;
