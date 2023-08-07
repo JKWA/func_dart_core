@@ -53,7 +53,9 @@ Task<B> flatMap<A, B>(Task<A> task, Task<B> Function(A) f) {
   return Task<B>(() async => (await (f(await task.task())).task()));
 }
 
-/// `chain` is an alias for `flatMap`.
+/// Alias for [flatMap].
+///
+/// Provides a way to handle an [Task] by chaining function calls.final chain = flatMap;
 final chain = flatMap;
 
 /// Transforms the result of a task using a function contained in another task.
