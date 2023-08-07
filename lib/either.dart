@@ -17,6 +17,15 @@ class Left<A, B> extends Either<A, B> {
 
   /// Constructs a `Left` instance that holds the provided [value].
   Left(this.value);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Left && other.value == value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
 }
 
 /// `Right` is a subclass of `Either` indicating that the value is of type `B`.
@@ -27,6 +36,15 @@ class Right<A, B> extends Either<A, B> {
 
   /// Constructs a `Right` instance that holds the provided [value].
   Right(this.value);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Right && other.value == value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
 }
 
 /// Wraps the given [value] in a `Left`, indicating the presence of a value of type `A`.
