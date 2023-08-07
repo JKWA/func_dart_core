@@ -1,5 +1,5 @@
-import 'package:functional_dart/function.dart';
-import 'package:functional_dart/string.dart' as s;
+import 'package:func_dart_core/function.dart';
+import 'package:func_dart_core/string.dart' as s;
 import 'package:test/test.dart';
 
 void main() {

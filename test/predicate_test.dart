@@ -1,4 +1,4 @@
-import 'package:functional_dart/predicate.dart';
+import 'package:func_dart_core/predicate.dart';
 import 'package:test/test.dart';
 
 void main() {

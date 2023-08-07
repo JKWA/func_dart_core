@@ -1,6 +1,6 @@
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/monoid.dart';
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/monoid.dart';
+import 'package:func_dart_core/string.dart';
 
 // The Monoid is the same as a Semigroup, but it includes a concept of 'empty'
 // This is useful when combining lists of things

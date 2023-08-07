@@ -1,6 +1,6 @@
-import 'package:functional_dart/either.dart' as e;
-import 'package:functional_dart/option.dart' as o;
-import 'package:functional_dart/taskeither.dart';
+import 'package:func_dart_core/either.dart' as e;
+import 'package:func_dart_core/option.dart' as o;
+import 'package:func_dart_core/taskeither.dart';
 import 'package:test/test.dart';
 
 void main() {

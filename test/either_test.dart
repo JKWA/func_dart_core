@@ -1,7 +1,7 @@
-import 'package:functional_dart/either.dart';
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/option.dart' as o;
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/either.dart';
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/option.dart' as o;
+import 'package:func_dart_core/string.dart';
 import 'package:test/test.dart';
 
 void main() {

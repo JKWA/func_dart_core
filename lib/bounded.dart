@@ -1,4 +1,4 @@
-import "package:functional_dart/ord.dart";
+import "package:func_dart_core/ord.dart";
 
 /// Defines a bounded type `A` which extends the `Ord` type.
 ///

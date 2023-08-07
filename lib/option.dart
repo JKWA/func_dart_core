@@ -1,6 +1,6 @@
-import 'package:functional_dart/eq.dart';
-import 'package:functional_dart/ord.dart';
-import 'package:functional_dart/predicate.dart';
+import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/ord.dart';
+import 'package:func_dart_core/predicate.dart';
 
 /// `Option` is a type representing the presence or absence of a value `A`.
 /// This class is part of the Option type system used in functional programming

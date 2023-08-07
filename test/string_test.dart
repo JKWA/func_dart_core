@@ -1,4 +1,4 @@
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/string.dart';
 import 'package:test/test.dart' hide isEmpty, startsWith, endsWith;
 
 void main() {

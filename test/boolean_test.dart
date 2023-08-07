@@ -1,4 +1,4 @@
-import 'package:functional_dart/boolean.dart';
+import 'package:func_dart_core/boolean.dart';
 import 'package:test/test.dart';
 
 void main() {

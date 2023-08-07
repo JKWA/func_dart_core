@@ -1,7 +1,7 @@
-import 'package:functional_dart/eq.dart';
-import 'package:functional_dart/option.dart';
-import 'package:functional_dart/ord.dart';
-import 'package:functional_dart/predicate.dart';
+import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/option.dart';
+import 'package:func_dart_core/ord.dart';
+import 'package:func_dart_core/predicate.dart';
 
 /// `Either` is a type representing one of two possible values, `A` or `B`.
 /// This class is part of the Either type system used in functional programming.

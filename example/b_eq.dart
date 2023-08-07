@@ -1,6 +1,6 @@
-import 'package:functional_dart/eq.dart';
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/string.dart';
 
 import 'a_user_record.dart';
 

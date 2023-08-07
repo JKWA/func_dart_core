@@ -1,6 +1,6 @@
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/ord.dart';
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/ord.dart';
+import 'package:func_dart_core/string.dart';
 import 'package:test/test.dart';
 
 typedef UserRecord = ({String name, int age});

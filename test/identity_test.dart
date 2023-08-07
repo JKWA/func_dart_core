@@ -1,4 +1,4 @@
-import 'package:functional_dart/identity.dart';
+import 'package:func_dart_core/identity.dart';
 import 'package:test/test.dart';
 
 void main() {

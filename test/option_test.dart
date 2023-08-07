@@ -1,5 +1,5 @@
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/option.dart';
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/option.dart';
 import 'package:test/test.dart';
 
 void main() {

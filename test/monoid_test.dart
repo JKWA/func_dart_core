@@ -1,7 +1,7 @@
-import 'package:functional_dart/bounded.dart' hide reverse;
-import 'package:functional_dart/integer.dart';
-import 'package:functional_dart/monoid.dart';
-import 'package:functional_dart/string.dart';
+import 'package:func_dart_core/bounded.dart' hide reverse;
+import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/monoid.dart';
+import 'package:func_dart_core/string.dart';
 import 'package:test/test.dart';
 
 void main() {

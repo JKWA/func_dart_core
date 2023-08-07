@@ -1,4 +1,4 @@
-import 'package:functional_dart/function.dart';
+import 'package:func_dart_core/function.dart';
 
 /// Abstract class `Task` that represents a computation
 /// that may produce a result of type [A] in the future.

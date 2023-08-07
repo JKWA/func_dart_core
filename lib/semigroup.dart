@@ -1,4 +1,4 @@
-import 'package:functional_dart/ord.dart';
+import 'package:func_dart_core/ord.dart';
 
 /// BaseSemigroup is an abstract class that defines a generic type for Semigroups.
 abstract class BaseSemigroup<T> {

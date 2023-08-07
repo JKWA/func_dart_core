@@ -1,9 +1,9 @@
-name: functional_dart
-description: A library for functional programming
+name: func_dart_core
+description: A functional programming library for Dart
 version: 0.1.0
-repository: https://github.com/JKWA/functional_dart
-homepage: https://jkwa.github.io/functional_dart/index.html
-issue_tracker: https://github.com/JKWA/functional_dart/issues
+repository: https://github.com/JKWA/func_dart_core
+homepage: https://jkwa.github.io/func_dart_core/index.html
+issue_tracker: https://github.com/JKWA/func_dart_core/issues
 license: MIT
 
 environment:

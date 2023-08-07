@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:functional_dart/task.dart';
+import 'package:func_dart_core/task.dart';
 import 'package:test/test.dart';
 
 void main() {

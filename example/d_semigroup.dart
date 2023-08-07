@@ -1,5 +1,5 @@
-import 'package:functional_dart/eq.dart' as eq;
-import 'package:functional_dart/ord.dart' as ord;
+import 'package:func_dart_core/eq.dart' as eq;
+import 'package:func_dart_core/ord.dart' as ord;
 
 import 'a_user_record.dart';
 import 'b_eq.dart';

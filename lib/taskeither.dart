@@ -1,6 +1,6 @@
-import 'package:functional_dart/either.dart';
-import 'package:functional_dart/option.dart' as o;
-import 'package:functional_dart/predicate.dart';
+import 'package:func_dart_core/either.dart';
+import 'package:func_dart_core/option.dart' as o;
+import 'package:func_dart_core/predicate.dart';
 
 /// `TaskEither` is a representation of asynchronous computations that can fail.
 /// It's a way of combining the concepts of `Future` and `Either`.
