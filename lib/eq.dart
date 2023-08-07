@@ -18,6 +18,18 @@ class _Eq<A> implements Eq<A> {
 }
 
 /// Creates an `Eq` from a given equality checking function.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   // Define an Eq for comparing integers based on divisibility by 5
+///   final eqDivisibleBy5 = fromEquals<int>((x, y) => x % 5 == y % 5);
+///
+///   print(eqDivisibleBy5.equals(15, 5)); // Output: true (Both are divisible by 5)
+///   print(eqDivisibleBy5.equals(10, 6)); // Output: false (10 % 5 is 0, while 6 % 5 is 1)
+/// }
+/// ```
 Eq<A> fromEquals<A>(bool Function(A x, A y) equals) {
   return _Eq(equals);
 }
@@ -52,6 +64,24 @@ BaseSemigroup<Eq<A>> getSemigroup<A>() => Semigroup<A>();
 BaseMonoid<Eq<A>> getMonoid<A>() => Monoid<A>();
 
 /// Transforms an `Eq<B>` into an `Eq<A>` using the given function.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   // Define an Eq for comparing strings case-insensitively
+///   final eqIgnoreCase = fromEquals<String>((x, y) => x.toLowerCase() == y.toLowerCase());
+///
+///   // Define a function to extract the first character of a string
+///   String firstChar(String s) => s.substring(0, 1);
+///
+///   // Create a contramapped Eq that compares strings by their first character
+///   final eqByFirstChar = contramap<String, String>(firstChar)(eqIgnoreCase);
+///
+///   print(eqByFirstChar.equals("hello", "Hi")); // Output: true (Both start with 'h')
+///   print(eqByFirstChar.equals("world", "war")); // Output: false ('w' is not equal to 'W')
+/// }
+/// ```
 Eq<A> Function(Eq<B>) contramap<A, B>(B Function(A a) f) {
   return (Eq<B> eqB) => _Eq<A>((A x, A y) => eqB.equals(f(x), f(y)));
 }

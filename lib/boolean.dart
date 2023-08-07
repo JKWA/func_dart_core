@@ -8,6 +8,35 @@ import "package:functional_dart/semigroup.dart";
 /// invokes and returns the result of either [onFalse] or [onTrue] function.
 /// The return type is `Object?` because [onFalse] and [onTrue] can potentially
 /// return different types.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   int value = 42;
+///
+///   // Define two lazy functions for onFalse and onTrue cases
+///   LazyArg<int> onFalseFunc = () {
+///     print("Value is false");
+///     return 0;
+///   };
+///
+///   LazyArg<String> onTrueFunc = () {
+///     print("Value is true");
+///     return "Hello";
+///   };
+///
+///   // Create a matchW function with onFalseFunc and onTrueFunc
+///   final matcher = matchW(onFalseFunc, onTrueFunc);
+///
+///   // Use the matcher to get the result based on the bool value
+///   Object? result1 = matcher(false); // Output: Value is false
+///   Object? result2 = matcher(true); // Output: Value is true
+///
+///   print(result1); // Output: 0
+///   print(result2); // Output: Hello
+/// }
+/// ```
 Object? Function(bool) matchW<A, B>(LazyArg<A> onFalse, LazyArg<B> onTrue) {
   return (bool value) => value ? onTrue() : onFalse();
 }
@@ -18,6 +47,35 @@ final foldW = matchW;
 /// Returns a function that depending on the provided [bool] value,
 /// invokes and returns the result of either [onFalse] or [onTrue] function.
 /// Both [onFalse] and [onTrue] must return the same type [A].
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   int value = 42;
+///
+///   // Define two lazy functions for onFalse and onTrue cases
+///   LazyArg<int> onFalseFunc = () {
+///     print("Value is false");
+///     return 0;
+///   };
+///
+///   LazyArg<int> onTrueFunc = () {
+///     print("Value is true");
+///     return 100;
+///   };
+///
+///   // Create a match function with onFalseFunc and onTrueFunc
+///   final matcher = match(onFalseFunc, onTrueFunc);
+///
+///   // Use the matcher to get the result based on the bool value
+///   int result1 = matcher(false); // Output: Value is false
+///   int result2 = matcher(true); // Output: Value is true
+///
+///   print(result1); // Output: 0
+///   print(result2); // Output: 100
+/// }
+/// ```
 A Function(bool) match<A>(LazyArg<A> onFalse, LazyArg<A> onTrue) {
   return (bool value) => value ? onTrue() : onFalse();
 }

@@ -1,13 +1,20 @@
 import 'package:functional_dart/ord.dart';
 
-/// BaseSemigroup is an abstract class that defines a generic type for Semigroups
+/// BaseSemigroup is an abstract class that defines a generic type for Semigroups.
 abstract class BaseSemigroup<T> {
-  /// Method that must be implemented to combine two elements of the Semigroup
+  /// Method that must be implemented to combine two elements of the Semigroup.
   T concat(T first, T second);
 }
 
 /// Creates a function that concatenates a list of elements
 /// starting from a given element.
+///
+/// Example:
+/// ```dart
+/// var semigroup = BaseSemigroup<int>();
+/// var func = concatAll(semigroup)(0);
+/// print(func([1, 2, 3, 4])); // Outputs: 10
+/// ```
 T Function(List<T>) Function(T) concatAll<T>(BaseSemigroup<T> semigroup) {
   return (T startWith) {
     return (List<T> as) {
@@ -24,7 +31,7 @@ class _MinSemigroup<A> extends BaseSemigroup<A> {
 
   _MinSemigroup(this.order);
 
-  /// Returns the minimum of two elements according to the provided Ord instance
+  /// Returns the minimum of two elements according to the provided Ord instance.
   @override
   A concat(A first, A second) =>
       order.compare(first, second) <= 0 ? first : second;
@@ -38,7 +45,7 @@ class _MaxSemigroup<A> extends BaseSemigroup<A> {
 
   _MaxSemigroup(this.order);
 
-  /// Returns the maximum of two elements according to the provided Ord instance
+  /// Returns the maximum of two elements according to the provided Ord instance.
   @override
   A concat(A first, A second) =>
       order.compare(first, second) >= 0 ? first : second;
@@ -48,7 +55,7 @@ class _MaxSemigroup<A> extends BaseSemigroup<A> {
 BaseSemigroup<A> first<A>() => _FirstSemigroup<A>();
 
 class _FirstSemigroup<A> extends BaseSemigroup<A> {
-  /// Returns the first of two elements
+  /// Returns the first of two elements.
   @override
   A concat(A first, A second) => first;
 }
@@ -57,7 +64,7 @@ class _FirstSemigroup<A> extends BaseSemigroup<A> {
 BaseSemigroup<A> last<A>() => _LastSemigroup<A>();
 
 class _LastSemigroup<A> extends BaseSemigroup<A> {
-  /// Returns the second of two elements
+  /// Returns the second of two elements.
   @override
   A concat(A first, A second) => second;
 }
@@ -72,7 +79,7 @@ class _ReverseSemigroup<A> extends BaseSemigroup<A> {
 
   _ReverseSemigroup(this.semigroup);
 
-  /// Returns the concatenation of the second and first elements
+  /// Returns the concatenation of the second and first elements.
   @override
   A concat(A first, A second) => semigroup.concat(second, first);
 }
@@ -86,7 +93,7 @@ class _ConstantSemigroup<A> extends BaseSemigroup<A> {
 
   _ConstantSemigroup(this.value);
 
-  /// Returns a constant value, ignoring its arguments
+  /// Returns a constant value, ignoring its arguments.
   @override
   A concat(A first, A second) => value;
 }
@@ -104,7 +111,7 @@ class _IntercalateSemigroup<A> extends BaseSemigroup<A> {
 
   _IntercalateSemigroup(this.middle, this.semigroup);
 
-  /// Returns the concatenation of the first element, middle element, and second element
+  /// Returns the concatenation of the first element, middle element, and second element.
   @override
   A concat(A first, A second) =>
       semigroup.concat(first, semigroup.concat(middle, second));

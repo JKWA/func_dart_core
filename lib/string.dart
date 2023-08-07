@@ -3,91 +3,162 @@ import 'monoid.dart';
 import 'ord.dart';
 import 'semigroup.dart';
 
-/// StringEq is a concrete implementation of Eq for Strings.
+/// Provides equality comparisons for strings.
 class StringEq extends Eq<String> {
-  /// Defines the equivalence of two String values
+  /// Checks if two strings are equal.
+  ///
+  /// ```dart
+  /// final eq = StringEq();
+  /// print(eq.equals('hello', 'hello')); // Outputs: true
+  /// ```
   @override
   bool equals(String x, String y) => x == y;
 }
 
-/// StringOrd is a concrete implementation of Ord for Strings.
+/// Provides ordering for strings.
 class StringOrd extends Ord<String> {
-  /// Creates a StringOrd, which will compare Strings by using their inherent order.
+  /// Initialize a new StringOrd.
+  ///
+  /// ```dart
+  /// final ord = StringOrd();
+  /// print(ord.compare('b', 'a')); // Outputs: 1
+  /// ```
   StringOrd() : super((String x, String y) => x.compareTo(y));
 }
 
-/// SemigroupConcat is a concrete implementation of a Semigroup for Strings.
+/// Provides string concatenation.
 class SemigroupConcat extends BaseSemigroup<String> {
-  /// Defines the operation of combining two String values
+  /// Concatenates two strings.
+  ///
+  /// ```dart
+  /// final sg = SemigroupConcat();
+  /// print(sg.concat('Hello, ', 'world!')); // Outputs: 'Hello, world!'
+  /// ```
   @override
   String concat(String first, String second) => first + second;
 }
 
-/// MonoidConcat is a concrete implementation of a Monoid for Strings.
+/// Provides string concatenation with a neutral element (empty string).
 class MonoidConcat extends BaseMonoid<String> {
-  /// Defines the identity element for the operation of this Monoid
+  /// Returns the identity element for string concatenation.
+  ///
+  /// ```dart
+  /// final m = MonoidConcat();
+  /// print(m.empty); // Outputs: ''
+  /// ```
   @override
   String get empty => '';
 
-  /// Defines the operation of combining two String values
+  /// Concatenates two strings.
+  ///
+  /// ```dart
+  /// final m = MonoidConcat();
+  /// print(m.concat('Hello, ', 'world!')); // Outputs: 'Hello, world!'
+  /// ```
   @override
   String concat(String first, String second) => first + second;
 }
 
-/// Provides the instance of Eq for Strings
+/// Singleton instances
 final Eq<String> eqString = StringEq();
-
-/// Provides the instance of Ord for Strings
 final Ord<String> ordString = StringOrd();
-
-/// Provides the instance of Semigroup for Strings
 final BaseSemigroup<String> semigroupConcat = SemigroupConcat();
-
-/// Provides the instance of Monoid for Strings
 final BaseMonoid<String> monoidConcat = MonoidConcat();
 
-/// Converts a String to upper case
+/// Convert a string to upper case.
+///
+/// ```dart
+/// print(toUpperCase('hello')); // Outputs: 'HELLO'
+/// ```
 String toUpperCase(String s) => s.toUpperCase();
 
-/// Converts a String to lower case
+/// Convert a string to lower case.
+///
+/// ```dart
+/// print(toLowerCase('HELLO')); // Outputs: 'hello'
+/// ```
 String toLowerCase(String s) => s.toLowerCase();
 
-/// Replaces first occurrence of a substring within a String
+/// Replaces the first occurrence of a substring.
+///
+/// ```dart
+/// print(replace('l', 'w', 'hello')); // Outputs: 'hewlo'
+/// ```
 String replace(String searchValue, String replaceValue, String s) =>
     s.replaceFirst(RegExp(searchValue), replaceValue);
 
-/// Trims whitespace from both ends of a String
+/// Removes whitespace from both ends of a string.
+///
+/// ```dart
+/// print(trim(' hello ')); // Outputs: 'hello'
+/// ```
 String trim(String s) => s.trim();
 
-/// Trims whitespace from the start of a String
+/// Removes whitespace from the start of a string.
+///
+/// ```dart
+/// print(trimLeft(' hello ')); // Outputs: 'hello '
+/// ```
 String trimLeft(String s) => s.trimLeft();
 
-/// Trims whitespace from the end of a String
+/// Removes whitespace from the end of a string.
+///
+/// ```dart
+/// print(trimRight(' hello ')); // Outputs: ' hello'
+/// ```
 String trimRight(String s) => s.trimRight();
 
-/// Returns a section of a String
+/// Returns a substring.
+///
+/// ```dart
+/// print(slice(0, 2, 'hello')); // Outputs: 'he'
+/// ```
 String slice(int start, int end, String s) => s.substring(start, end);
 
-/// Checks if a String is empty
+/// Checks if a string is empty.
+///
+/// ```dart
+/// print(isEmpty('')); // Outputs: true
+/// ```
 bool isEmpty(String s) => s.isEmpty;
 
-/// Returns the size of a String
+/// Returns the length of a string.
+///
+/// ```dart
+/// print(size('hello')); // Outputs: 5
+/// ```
 int size(String s) => s.length;
 
-/// Splits a String by a separator
+/// Splits a string by a separator.
+///
+/// ```dart
+/// print(split(',', 'hello,world')); // Outputs: ['hello', 'world']
+/// ```
 List<String> split(String separator, String s) {
   final result = s.split(separator);
   return result.isEmpty ? [''] : result; // Dart split can return an empty list.
 }
 
-/// Checks if a String includes a substring
+/// Checks if a string includes a substring.
+///
+/// ```dart
+/// print(includes('ell', 'hello')); // Outputs: true
+/// ```
 bool includes(String searchString, String s, [int? position]) =>
     s.contains(searchString, position ?? 0);
 
-/// Checks if a String starts with a substring
+/// Checks if a string starts with a substring.
+///
+/// ```dart
+/// print(startsWith('hel', 'hello')); // Outputs: true
+/// ```
 bool startsWith(String searchString, String s, [int? position]) =>
     s.startsWith(searchString, position ?? 0);
 
-/// Checks if a String ends with a substring
+/// Checks if a string ends with a substring.
+///
+/// ```dart
+/// print(endsWith('lo', 'hello')); // Outputs: true
+/// ```
 bool endsWith(String searchString, String s, [int? position]) =>
     s.endsWith(searchString);

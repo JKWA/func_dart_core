@@ -18,6 +18,25 @@ abstract class Bounded<A> extends Ord<A> {
 /// The function will return the `bottom` if the value is less than the lower
 /// bound and the `top` if it is greater than the upper bound. If the value is
 /// within the bounds, it will be returned as is.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   // Create a bounded type for integers in the range of 1 to 10
+///   final boundedIntegers = Bounded<int>((x, y) => x.compareTo(y));
+///   boundedIntegers.top = 10;
+///   boundedIntegers.bottom = 1;
+///
+///   // Create the clamp function for integers
+///   final clampInt = clamp(boundedIntegers);
+///
+///   // Use the clamp function to restrict a value within the bounds
+///   int value1 = clampInt(5); // Output: 5 (Within the bounds)
+///   int value2 = clampInt(15); // Output: 10 (Clamped to the upper bound)
+///   int value3 = clampInt(-5); // Output: 1 (Clamped to the lower bound)
+/// }
+/// ```
 A Function(A) clamp<A>(Bounded<A> bounded) {
   return (A a) {
     if (bounded.compare(a, bounded.bottom) < 0) {
@@ -34,6 +53,23 @@ A Function(A) clamp<A>(Bounded<A> bounded) {
 ///
 /// The `top` of the original bounded object becomes the `bottom` of the
 /// reversed one and vice versa.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   // Create a bounded type for integers in the range of 1 to 10
+///   final boundedIntegers = Bounded<int>((x, y) => x.compareTo(y));
+///   boundedIntegers.top = 10;
+///   boundedIntegers.bottom = 1;
+///
+///   // Reverse the bounds
+///   final reversedBoundedIntegers = reverse(boundedIntegers);
+///
+///   print(reversedBoundedIntegers.top); // Output: 1 (The bottom of the original)
+///   print(reversedBoundedIntegers.bottom); // Output: 10 (The top of the original)
+/// }
+/// ```
 Bounded<A> reverse<A>(Bounded<A> bounded) {
   return _ReversedBounded<A>(bounded);
 }

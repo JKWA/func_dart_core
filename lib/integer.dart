@@ -52,16 +52,26 @@ class BoundedInt extends IntegerOrd implements Bounded<int> {
   @override
   final int bottom;
 
-  BoundedInt(
-    this.bottom,
-    this.top,
-  ) : super();
+  BoundedInt(this.bottom, this.top) : super();
 
   @override
   bool equals(int x, int y) => compare(x, y) == 0;
 }
 
 /// Constructs a BoundedInt object with specified lower and upper bounds.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   // Create a bounded integer type for values between 1 and 10
+///   BoundedInt bounded = boundedInt(1, 10);
+///
+///   // Compare two integers using the bounded ordering
+///   bool result1 = bounded.compare(5, 8) < 0; // Output: true (5 is less than 8)
+///   bool result2 = bounded.compare(15, 10) > 0; // Output: false (15 is not within the bounds)
+/// }
+/// ```
 BoundedInt boundedInt(int bottom, int top) => BoundedInt(bottom, top);
 
 /// Predefined instances.
