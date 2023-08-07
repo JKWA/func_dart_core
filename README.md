@@ -28,6 +28,18 @@ This library prioritizes type safety over perfectly adhering to abstract concept
 
 Given the current state of Dart language features, specifically its lack of support for higher kinded types, we have to make some trade-offs when trying to implement functional programming constructs like Functors, Applicatives, or Monads. In practical terms, this translates to implementing methods like map, flatMap, and ap as standalone functions that operate on specific types (like Identity, Option, List, etc.), rather than as methods within those classes or as part of shared abstract interfaces. Although this approach diverges from traditional object-oriented programming style, it provides a functional programming style experience and strengthens type safety within the Dart type system.
 
+## The Avoidance of `dynamic`
+
+One distinctive feature of Functional Dart is its intentional avoidance of Dart's `dynamic` type. Here's why that's significant:
+
+1. **Type Safety**: Using static typing offers compile-time checks, catching potential mistakes early in the development lifecycle. It reduces the risk of runtime errors, making your codebase more robust and reliable.
+2. **Readability and Clarity**: Explicit type declarations act as implicit documentation. This makes the code more readable as developers can quickly grasp the structure and nature of data without having to delve deep into the implementation details.
+3. **Performance Benefits**: By sidestepping `dynamic`, the Dart compiler can make better runtime optimizations. This results in code that's not just safer but also faster.
+4. **Smoother Refactoring**: Strong typing ensures that refactoring is a less error-prone process. Changing a type would result in compile-time errors if that type is misused elsewhere in the code, making it easier to spot and fix issues.
+5. **Enhanced Development Experience**: Modern IDEs and editors use type information to offer more precise autocompletion suggestions, making the development process smoother and more intuitive.
+
+By promoting strong typing, Functional Dart ensures that developers are less likely to run into unforeseen runtime issues, making applications more maintainable and robust. This approach, combined with the principles of functional programming, provides a structured and reliable framework for developing complex applications in Dart.
+
 ## Installation
 
 TODO: Publish
