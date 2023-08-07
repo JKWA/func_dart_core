@@ -1,7 +1,10 @@
 name: functional_dart
 description: A library for functional programming
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+version: 0.1.0
+repository: https://github.com/JKWA/functional_dart
+homepage: https://jkwa.github.io/functional_dart/index.html
+issue_tracker: https://github.com/JKWA/functional_dart/issues
+license: MIT
 
 environment:
   sdk: ^3.0.6
@@ -9,5 +12,3 @@ environment:
 dev_dependencies:
   lints: ^2.1.1
   test: ^1.21.0
-dependencies:
-  tuple: ^2.0.2
