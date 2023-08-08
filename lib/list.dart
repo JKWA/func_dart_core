@@ -151,9 +151,9 @@ class ImmutableList<T> implements Iterable<T> {
   @override
   Iterable<T> where(bool Function(T) test) => _items.where(test);
 
-  /// Returns an iterable of objects of type [T], where [T] is a subtype of [T0].
+  /// Returns an iterable of objects of type [T], where [T] is a subtype of [T].
   @override
-  Iterable<T> whereType<T>() => _items.whereType<T>();
+  Iterable<T1> whereType<T1>() => _items.whereType<T1>();
 
   /// Returns a string representation of the list.
   @override
