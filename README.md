@@ -40,10 +40,6 @@ One distinctive feature of Functional Dart is its intentional avoidance of Dart'
 
 By promoting strong typing, Functional Dart ensures that developers are less likely to run into unforeseen runtime issues, making applications more maintainable and robust. This approach, combined with the principles of functional programming, provides a structured and reliable framework for developing complex applications in Dart.
 
-## Installation
-
-TODO: Publish
-
 ## Usage
 
-See to `/example` folder.
+See `/example` folder.
