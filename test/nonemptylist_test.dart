@@ -14,9 +14,16 @@ void main() {
       expect(() => nel.items[0] = 2, throwsUnsupportedError);
     });
 
+    test('append should add an item to the end', () {
+      final nel = NonEmptyList([1, 2, 3]);
+      final pre = append(0)(nel);
+      expect(pre.items, [1, 2, 3, 0]);
+    });
+
     test('prepend should add an item to the beginning', () {
-      final nel = prepend(0, [1, 2, 3]);
-      expect(nel.items, [0, 1, 2, 3]);
+      final nel = NonEmptyList([1, 2, 3]);
+      final pre = prepend(0)(nel);
+      expect(pre.items, [0, 1, 2, 3]);
     });
 
     test('head should return the first item', () {

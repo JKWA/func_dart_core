@@ -34,15 +34,33 @@ class NonEmptyList<T> {
 /// ```
 bool isNonEmpty<T>(List<T> list) => list.isNotEmpty;
 
-/// Prepends [item] to the provided [list] and returns a [NonEmptyList].
+/// Appends an item to the end of a [NonEmptyList].
 ///
+/// Takes a [NonEmptyList] and returns a new [NonEmptyList] with the given
+/// item added to the end.
+///
+/// Example:
 /// ```dart
-/// var nel = prepend(0, [1, 2, 3]);
-/// print(nel.items);  // [0, 1, 2, 3]
+/// final list = NonEmptyList<int>([1, 2, 3]);
+/// final appended = append(4)(list);
+/// print(appended.items);  // Outputs: [1, 2, 3, 4]
 /// ```
-NonEmptyList<T> prepend<T>(T item, List<T> list) {
-  return NonEmptyList([item, ...list]);
-}
+NonEmptyList<T> Function(NonEmptyList<T>) append<T>(T item) =>
+    (NonEmptyList<T> list) => NonEmptyList([...list.items, item]);
+
+/// Prepends an item to the beginning of a [NonEmptyList].
+///
+/// Takes a [NonEmptyList] and returns a new [NonEmptyList] with the given
+/// item added to the beginning.
+///
+/// Example:
+/// ```dart
+/// final list = NonEmptyList<int>([2, 3, 4]);
+/// final prepended = prepend(1)(list);
+/// print(prepended.items);  // Outputs: [1, 2, 3, 4]
+/// ```
+NonEmptyList<T> Function(NonEmptyList<T>) prepend<T>(T item) =>
+    (NonEmptyList<T> list) => NonEmptyList([item, ...list.items]);
 
 /// Returns the first item of the [list].
 ///
