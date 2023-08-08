@@ -11,3 +11,7 @@
 - Add double
 - Add nonemptylist
 - Add listß
+
+## 0.2.1
+
+- Update list to implement Iterable

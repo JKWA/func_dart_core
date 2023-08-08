@@ -4,19 +4,162 @@ import 'package:func_dart_core/eq.dart';
 import 'package:func_dart_core/option.dart' as option;
 import 'package:func_dart_core/predicate.dart';
 
-/// Represents an immutable list of items of type [T].
+/// A list that cannot be modified after it's created.
+///
+/// This is a wrapper around a standard Dart list that provides an unmodifiable
+/// view of the original list. This ensures that the underlying list cannot
+/// be changed once the [ImmutableList] object has been constructed.
 ///
 /// Example:
-/// ```dart
-/// final list = ImmutableList<int>([1, 2, 3]);
-/// print(list.items);  // Outputs: (1, 2, 3)
 /// ```
-class ImmutableList<T> {
+/// final immutableList = ImmutableList([1, 2, 3]);
+/// print(immutableList.first); // prints 1
+/// ```
+class ImmutableList<T> implements Iterable<T> {
   final List<T> _items;
 
+  /// Constructs an [ImmutableList].
   ImmutableList(List<T> items) : _items = List.unmodifiable(items);
 
+  /// Provides an unmodifiable view of the items.
   UnmodifiableListView<T> get items => UnmodifiableListView(_items);
+
+  @override
+  Iterator<T> get iterator => _items.iterator;
+
+  /// Returns the number of items in the list.
+  @override
+  int get length => _items.length;
+
+  /// Checks if any item in the list satisfies the provided test.
+  @override
+  bool any(bool Function(T) test) => _items.any(test);
+
+  /// Casts the items of the list to the desired type [R].
+  @override
+  Iterable<R> cast<R>() => _items.cast<R>();
+
+  /// Determines if the list contains the provided element.
+  @override
+  bool contains(Object? element) => _items.contains(element);
+
+  /// Returns the element at the specified index.
+  @override
+  T elementAt(int index) => _items.elementAt(index);
+
+  /// Checks if every item in the list satisfies the provided test.
+  @override
+  bool every(bool Function(T) test) => _items.every(test);
+
+  /// Expands each element into zero or more elements.
+  @override
+  Iterable<T0> expand<T0>(Iterable<T0> Function(T) f) => _items.expand(f);
+
+  /// Gets the first element in the list.
+  @override
+  T get first => _items.first;
+
+  /// Gets the first element that satisfies the given predicate [test]. If none
+  /// are found, it calls the [orElse] function if provided.
+  @override
+  T firstWhere(bool Function(T) test, {T Function()? orElse}) =>
+      _items.firstWhere(test, orElse: orElse);
+
+  /// Accumulates value starting with [initialValue] and applying [combine] for
+  /// each element in order.
+  @override
+  T0 fold<T0>(T0 initialValue, T0 Function(T0, T) combine) =>
+      _items.fold(initialValue, combine);
+
+  /// Appends all elements of [other] to the end of this iterable's elements.
+  @override
+  Iterable<T> followedBy(Iterable<T> other) => _items.followedBy(other);
+
+  /// Applies the function [f] to each element of this collection.
+  @override
+  void forEach(void Function(T) f) => _items.forEach(f);
+
+  /// Returns true if there are no elements in this collection.
+  @override
+  bool get isEmpty => _items.isEmpty;
+
+  /// Returns true if there is at least one element in this collection.
+  @override
+  bool get isNotEmpty => _items.isNotEmpty;
+
+  /// Converts the items in the list to a string and concatenates them using the
+  /// provided [separator].
+  @override
+  String join([String separator = ""]) => _items.join(separator);
+
+  /// Gets the last element in the list.
+  @override
+  T get last => _items.last;
+
+  /// Gets the last element that satisfies the given predicate [test]. If none
+  /// are found, it calls the [orElse] function if provided.
+  @override
+  T lastWhere(bool Function(T) test, {T Function()? orElse}) =>
+      _items.lastWhere(test, orElse: orElse);
+
+  /// Applies the function [f] to each element in the list and returns a new
+  /// iterable with elements of type [T0].
+  @override
+  Iterable<T0> map<T0>(T0 Function(T) f) => _items.map(f);
+
+  /// Reduces the elements in the list to a single value using the [combine]
+  /// function.
+  @override
+  T reduce(T Function(T, T) combine) => _items.reduce(combine);
+
+  /// Gets the single element in the list. Throws an error if the list has more
+  /// than one item.
+  @override
+  T get single => _items.single;
+
+  /// Gets the single element that satisfies the given predicate [test]. If none
+  /// are found, it calls the [orElse] function if provided.
+  @override
+  T singleWhere(bool Function(T) test, {T Function()? orElse}) =>
+      _items.singleWhere(test, orElse: orElse);
+
+  /// Skips the first [count] elements.
+  @override
+  Iterable<T> skip(int count) => _items.skip(count);
+
+  /// Skips while elements satisfy the given predicate [test].
+  @override
+  Iterable<T> skipWhile(bool Function(T) test) => _items.skipWhile(test);
+
+  /// Takes the first [count] elements.
+  @override
+  Iterable<T> take(int count) => _items.take(count);
+
+  /// Takes while elements satisfy the given predicate [test].
+  @override
+  Iterable<T> takeWhile(bool Function(T) test) => _items.takeWhile(test);
+
+  /// Returns a list representation of the iterable.
+  @override
+  List<T> toList({bool growable = true}) => _items.toList(growable: growable);
+
+  /// Returns a set representation of the iterable.
+  @override
+  Set<T> toSet() => _items.toSet();
+
+  /// Filters the elements in the list based on the predicate [test].
+  @override
+  Iterable<T> where(bool Function(T) test) => _items.where(test);
+
+  /// Returns an iterable of objects of type [T], where [T] is a subtype of [T0].
+  @override
+  Iterable<T> whereType<T>() => _items.whereType<T>();
+
+  /// Returns a string representation of the list.
+  @override
+  String toString() {
+    return toList().toString();
+  }
 }
 
 /// Returns a function that appends [item] to the end of an [ImmutableList].
