@@ -5,3 +5,9 @@
 ## 0.1.1
 
 - Change name to func_dart_core.
+
+## 0.2.0
+
+- Add double
+- Add nonemptylist
+- Add listß
