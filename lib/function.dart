@@ -188,3 +188,20 @@ J Function(A) flow9<A, B, C, D, E, F, G, H, I, J>(
         I Function(H) ih,
         J Function(I) ji) =>
     (A a) => pipe10(a, ab, bc, cd, de, ef, fg, gh, ih, ji);
+
+/// Flips the order of arguments for a curried function.
+///
+/// Example:
+///
+/// ```dart
+/// String concatenate(String a) => (String b) => a + b;
+/// final flippedConcatenate = flip(concatenate);
+///
+/// print(concatenate('Hello, ')('World!'));  // Outputs: 'Hello, World!'
+/// print(flippedConcatenate('World!')('Hello, '));  // Outputs: 'Hello, World!'
+/// ```
+C Function(A) Function(B) flip<A, B, C>(C Function(B) Function(A) fn) {
+  return (B b) => (A a) {
+        return fn(a)(b);
+      };
+}

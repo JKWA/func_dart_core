@@ -130,4 +130,13 @@ void main() {
           equals(10));
     });
   });
+  group('flip', () {
+    test('flips the order of arguments for a curried function', () {
+      String Function(String b) concatenate(String a) => (String b) => a + b;
+      final flippedConcatenate = flip(concatenate);
+
+      expect(concatenate('Hello, ')('World!'), 'Hello, World!');
+      expect(flippedConcatenate('World!')('Hello, '), 'Hello, World!');
+    });
+  });
 }

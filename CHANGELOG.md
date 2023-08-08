@@ -15,3 +15,8 @@
 ## 0.2.1
 
 - Update list to implement Iterable
+
+## 0.3.0
+
+- Add flip to function
+- Add intersection and symmetricDifference to list

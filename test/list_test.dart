@@ -80,6 +80,47 @@ void main() {
     });
   });
 
+  group('symmetricDifference - ', () {
+    test('should find elements that are in either list1 or list2 but not both',
+        () {
+      final differ = symmetricDifference(eqInt);
+      final list1 = ImmutableList([1, 2, 3, 4]);
+      final list2 = ImmutableList([3, 4, 5, 6]);
+      final result = differ(list1)(list2);
+
+      expect(result.items, equals([1, 2, 5, 6]));
+    });
+
+    test('should return concatenated lists when no common elements found', () {
+      final differ = symmetricDifference(eqInt);
+      final list1 = ImmutableList([1, 2]);
+      final list2 = ImmutableList([3, 4]);
+      final result = differ(list1)(list2);
+
+      expect(result.items, equals([1, 2, 3, 4]));
+    });
+  });
+
+  group('intersection - ', () {
+    test('should find common elements in two lists', () {
+      final intersector = intersection(eqInt);
+      final list1 = ImmutableList([1, 2, 3, 4]);
+      final list2 = ImmutableList([3, 4, 5, 6]);
+      final result = intersector(list1)(list2);
+
+      expect(result.items, equals([3, 4]));
+    });
+
+    test('should return empty list when no common elements found', () {
+      final intersector = intersection(eqInt);
+      final list1 = ImmutableList([1, 2]);
+      final list2 = ImmutableList([3, 4]);
+      final result = intersector(list1)(list2);
+
+      expect(result.items, isEmpty);
+    });
+  });
+
   group('folding - ', () {
     test('should compute the sum using foldLeft', () {
       final il = ImmutableList([1, 2, 3, 4]);

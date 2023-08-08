@@ -354,6 +354,61 @@ ImmutableList<A> Function(ImmutableList<A>) Function(ImmutableList<A>)
   };
 }
 
+/// Returns a function that computes the symmetric difference between two `ImmutableList`s.
+///
+/// Given two lists, `list1` and `list2`, it returns a new list containing
+/// the elements that are in either `list1` or `list2` but not both, based on the provided equality comparison.
+///
+/// Example:
+///
+/// ```dart
+/// final eqInt = EqInt();
+/// final differ = symmetricDifference(eqInt);
+/// final list1 = ImmutableList([1, 2, 3, 4]);
+/// final list2 = ImmutableList([3, 4, 5, 6]);
+/// final result = differ(list1)(list2);
+/// print(result);  // [1, 2, 5, 6]
+/// ```
+ImmutableList<A> Function(ImmutableList<A>) Function(ImmutableList<A>)
+    symmetricDifference<A>(Eq<A> eq) {
+  final diff = difference(eq);
+  return (ImmutableList<A> list1) {
+    return (ImmutableList<A> list2) {
+      final diff1to2 = diff(list1)(list2).items;
+      final diff2to1 = diff(list2)(list1).items;
+      return ImmutableList([...diff1to2, ...diff2to1]);
+    };
+  };
+}
+
+/// Returns a function that computes the intersection between two `ImmutableList`s.
+///
+/// Given two lists, `list1` and `list2`, it returns a new list containing
+/// only the elements that exist in both lists based on the provided equality comparison.
+///
+/// Example:
+///
+/// ```dart
+/// final eqInt = EqInt();
+/// final intersector = intersection(eqInt);
+/// final list1 = ImmutableList([1, 2, 3, 4]);
+/// final list2 = ImmutableList([3, 4, 5, 6]);
+/// final result = intersector(list1)(list2);
+/// print(result);  // [3, 4]
+/// ```
+ImmutableList<A> Function(ImmutableList<A>) Function(ImmutableList<A>)
+    intersection<A>(Eq<A> eq) {
+  return (ImmutableList<A> list1) {
+    return (ImmutableList<A> list2) {
+      final itemsInList2 = list2.items.toSet();
+      return ImmutableList(list1.items
+          .where(
+              (item1) => itemsInList2.any((item2) => eq.equals(item1, item2)))
+          .toList());
+    };
+  };
+}
+
 /// Folds a list from the left with a binary operation.
 ///
 /// Example:
