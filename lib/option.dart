@@ -2,27 +2,76 @@ import 'package:func_dart_core/eq.dart';
 import 'package:func_dart_core/ord.dart';
 import 'package:func_dart_core/predicate.dart';
 
-/// `Option` is a type representing the presence or absence of a value `A`.
-/// This class is part of the Option type system used in functional programming
-/// that is an alternative to using null. It can be one of two subclasses: `Some` and `None`.
+/// Represents an optional value: every instance is either [Some], containing a value, or [None],
+/// indicating the absence of a value. This pattern is an alternative to using nullable types
+/// (`null`) for representing the absence of a value.
+///
+/// Typical usages include representing results which might fail, or optional function arguments.
+///
+/// Example:
+///
+/// ```dart
+/// final someValue = Some(42);
+/// final noValue = None<int>();
+/// ```
 sealed class Option<A> {
   const Option();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
 }
 
-/// `Some` is a subclass of `Option` indicating that there is a value present.
-/// It encapsulates or "wraps" that value.
+/// Represents an existing value of type [A]. It's a concrete implementation of [Option].
+///
+/// Use [Some] to encapsulate an actual value, as opposed to [None] which represents the absence
+/// of a value.
+///
+/// Example:
+///
+/// ```dart
+/// final optionValue = Some(42);
+/// print(optionValue.value);  // Outputs: 42
+/// ```
 class Some<A> extends Option<A> {
-  /// The value that this `Some` instance holds.
+  /// The encapsulated value of this [Some] instance.
   final A value;
 
-  /// Constructs a `Some` instance that holds the provided [value].
+  /// Constructs a [Some] instance encapsulating the provided [value].
   Some(this.value);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Some<A> && other.value == value;
+  }
+
+  @override
+  int get hashCode => value.hashCode;
 }
 
-/// `None` is a subclass of `Option` indicating the absence of a value.
-/// It is used where in other languages you might find null or undefined.
+/// Represents the absence of a value. It's a concrete implementation of [Option].
+///
+/// Use [None] to indicate that no value exists, typically in scenarios where
+/// in other languages one might use `null` or `undefined`.
+///
+/// Example:
+///
+/// ```dart
+/// final optionValue = None<int>();
+/// ```
 class None<A> extends Option<A> {
   const None();
+
+  @override
+  bool operator ==(Object other) => other is None<A>;
+
+  @override
+  int get hashCode => 0; // A chosen constant representing None's hash code
 }
 
 /// Wraps the given [value] in a `Some`, indicating the presence of a value.
