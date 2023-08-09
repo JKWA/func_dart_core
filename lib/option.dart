@@ -1,4 +1,5 @@
 import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/ord.dart';
 import 'package:func_dart_core/predicate.dart';
 
@@ -16,14 +17,6 @@ import 'package:func_dart_core/predicate.dart';
 /// ```
 sealed class Option<A> {
   const Option();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
 }
 
 /// Represents an existing value of type [A]. It's a concrete implementation of [Option].
@@ -456,4 +449,97 @@ class OptionOrd<A> extends Ord<Option<A>> {
 /// ```
 Ord<Option<A>> getOrd<A>(Ord<A> ord) {
   return OptionOrd<A>(ord);
+}
+
+// Option<il.ImmutableList<B>> sequenceList<B>(il.ImmutableList<Option<B>> list) {
+//   return list.fold<Option<il.ImmutableList<B>>>(of(il.ImmutableList([])),
+//       (acc, opt) => ap(map(acc, (curr) => (B b) => il.append(b)(curr)), opt));
+// }
+
+/// Takes an `ImmutableList` of `Option` values and returns an `Option` containing
+/// an `ImmutableList` of values.
+///
+/// If any of the `Option` values in the input list is `None`, this function
+/// returns `None`. Otherwise, it collects all the values inside the `Some` variants
+/// into an `ImmutableList` and wraps it in a `Some`.
+///
+/// ### Parameters:
+/// - `list`: An `ImmutableList` of `Option` values.
+///
+/// ### Returns:
+/// An `Option` containing an `ImmutableList` of the values from the input list.
+/// Returns `None` if any of the input values is `None`.
+///
+/// ### Examples:
+///
+/// ```dart
+/// var listOfOptions = il.ImmutableList<Option<int>>([
+///   Some(1),
+///   Some(2),
+///   Some(3)
+/// ]);
+/// var result = sequenceList(listOfOptions);
+/// print(result); // Outputs: Some(ImmutableList([1, 2, 3]))
+/// ```
+///
+/// ```dart
+/// var listOfOptionsWithNone = il.ImmutableList<Option<int>>([
+///   Some(1),
+///   None(),
+///   Some(3)
+/// ]);
+/// var resultWithNone = sequenceList(listOfOptionsWithNone);
+/// print(resultWithNone); // Outputs: None
+/// ```
+Option<il.ImmutableList<A>> sequenceList<A>(il.ImmutableList<Option<A>> list) {
+  final result = <A>[];
+
+  for (var opt in list) {
+    if (opt is None<A>) return None();
+    result.add((opt as Some<A>).value);
+  }
+
+  return Some(il.of(result));
+}
+
+/// Takes an `ImmutableList` and a function, then applies the function to each item in the list.
+///
+/// This function maps each element of the input list to an `Option` using the provided function `fn`.
+/// If the result of applying `fn` to any element is `None`, this function returns `None`.
+/// Otherwise, it collects all the values inside the `Some` variants into an `ImmutableList`
+/// and wraps it in a `Some`.
+///
+/// ### Parameters:
+/// - `fn`: A function that takes a value of type `A` and returns an `Option` of type `B`.
+/// - `list`: An `ImmutableList` of values to be mapped using the function `fn`.
+///
+/// ### Returns:
+/// An `Option` containing an `ImmutableList` of the mapped values.
+/// Returns `None` if the result of mapping any input value is `None`.
+///
+/// ### Examples:
+///
+/// ```dart
+/// var listOfInts = il.ImmutableList<int>([1, 2, 3]);
+/// Option<int> addOne(int x) => Some(x + 1);
+/// var result = traverseList(addOne, listOfInts);
+/// print(result); // Outputs: Some(ImmutableList([2, 3, 4]))
+/// ```
+///
+/// ```dart
+/// Option<int> returnNoneForThree(int x) => x == 3 ? None() : Some(x);
+/// var resultWithNone = traverseList(returnNoneForThree, listOfInts);
+/// print(resultWithNone); // Outputs: None
+/// ```
+Option<il.ImmutableList<B>> traverseList<A, B>(
+    Option<B> Function(A) fn, il.ImmutableList<A> list) {
+  return list.fold(Some(il.ImmutableList<B>([])),
+      (Option<il.ImmutableList<B>> acc, A item) {
+    Option<B> mappedItem = fn(item);
+    if (acc is Some<il.ImmutableList<B>> && mappedItem is Some<B>) {
+      return Some(il.append(mappedItem.value)(acc.value));
+    } else {
+      return None<il.ImmutableList<B>>();
+    }
+  });
 }

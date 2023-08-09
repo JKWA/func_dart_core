@@ -1,4 +1,5 @@
 import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart';
 import 'package:func_dart_core/ord.dart';
 import 'package:func_dart_core/predicate.dart';
@@ -422,4 +423,94 @@ class EitherOrd<A, B> extends Ord<Either<A, B>> {
 /// ```
 Ord<Either<A, B>> getOrd<A, B>(Ord<A> leftOrd, Ord<B> rightOrd) {
   return EitherOrd<A, B>(leftOrd, rightOrd);
+}
+
+/// Takes an `ImmutableList` of `Either` values and attempts to extract their right-hand values.
+///
+/// This function iterates through each `Either` value in the input list.
+/// If any of them is a `Left`, the function immediately returns that `Left` value.
+/// If all are `Right` values, it collects them into an `ImmutableList` and wraps it in a `Right`.
+///
+/// ### Parameters:
+/// - `list`: An `ImmutableList` of `Either` values to be processed.
+///
+/// ### Returns:
+/// An `Either` containing an `ImmutableList` of the right-hand values.
+/// Returns the first `Left` encountered while processing the input list.
+///
+/// ### Examples:
+///
+/// ```dart
+/// var listOfEithers = il.ImmutableList<Either<String, int>>([
+///   Right(1),
+///   Right(2),
+///   Right(3)
+/// ]);
+/// var result = sequenceList(listOfEithers);
+/// print(result); // Outputs: Right(ImmutableList([1, 2, 3]))
+/// ```
+///
+/// ```dart
+/// var listOfEithersWithLeft = il.ImmutableList<Either<String, int>>([
+///   Right(1),
+///   Left("Error"),
+///   Right(3)
+/// ]);
+/// var resultWithError = sequenceList(listOfEithersWithLeft);
+/// print(resultWithError); // Outputs: Left("Error")
+/// ```
+Either<E, il.ImmutableList<A>> sequenceList<E, A>(
+    il.ImmutableList<Either<E, A>> list) {
+  final result = <A>[];
+
+  for (var e in list) {
+    if (e is Left<E, A>) {
+      return Left(e.value);
+    }
+    result.add((e as Right<E, A>).value);
+  }
+
+  return Right(il.of(result));
+}
+
+/// Processes each item of an `ImmutableList` through a function `f` that returns an `Either`,
+/// and collects the results into a new `ImmutableList`.
+///
+/// This function goes through each item of the provided list and applies the function `f` to it.
+/// If at any point the function `f` returns a `Left`, the traversal is stopped,
+/// and that `Left` value is returned immediately. If all items are successfully processed,
+/// their results are collected into an `ImmutableList` wrapped in a `Right`.
+///
+/// ### Parameters:
+/// - `f`: A function that takes an item of type `A` and returns an `Either` of type `E` or `B`.
+/// - `list`: An `ImmutableList` of items of type `A` to be processed.
+///
+/// ### Returns:
+/// An `Either` containing an `ImmutableList` of the processed items.
+/// Returns the first `Left` encountered while processing the input list.
+///
+/// ### Examples:
+///
+/// ```dart
+/// var myList = il.ImmutableList<int>([1, 2, 3]);
+/// var result = traverseList((int item) => item > 1 ? Right(item) : Left("Error"), myList);
+/// print(result); // Outputs: Left("Error")
+/// ```
+///
+/// ```dart
+/// var myListWithoutError = il.ImmutableList<int>([2, 3, 4]);
+/// var successfulResult = traverseList((int item) => Right(item * 2), myListWithoutError);
+/// print(successfulResult); // Outputs: Right(ImmutableList([4, 6, 8]))
+/// ```
+Either<E, il.ImmutableList<B>> traverseList<E, A, B>(
+    Either<E, B> Function(A) f, il.ImmutableList<A> list) {
+  final results = <B>[];
+  for (final item in list) {
+    final result = f(item);
+    if (result is Left<E, B>) {
+      return Left<E, il.ImmutableList<B>>(result.value);
+    }
+    results.add((result as Right<A, B>).value);
+  }
+  return Right<E, il.ImmutableList<B>>(il.of<B>(results));
 }

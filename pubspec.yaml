@@ -9,6 +9,9 @@ license: MIT
 environment:
   sdk: ^3.0.6
 
+dependencies:
+  collection: ^1.15.0
+
 dev_dependencies:
   lints: ^2.1.1
   test: ^1.21.0

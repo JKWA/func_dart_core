@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:collection/collection.dart';
 
 import 'package:func_dart_core/either.dart' as either;
 import 'package:func_dart_core/eq.dart';
@@ -25,6 +26,17 @@ class ImmutableList<T> implements Iterable<T> {
 
   /// Provides an unmodifiable view of the items.
   UnmodifiableListView<T> get items => UnmodifiableListView(_items);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ImmutableList<T>) return false;
+    final listEquality = ListEquality<T>();
+    return listEquality.equals(items, (other).items);
+  }
+
+  @override
+  int get hashCode => ListEquality<T>().hash(items);
 
   @override
   Iterator<T> get iterator => _items.iterator;

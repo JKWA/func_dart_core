@@ -1,5 +1,6 @@
 import 'package:func_dart_core/either.dart';
 import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart' as o;
 import 'package:func_dart_core/string.dart';
 import 'package:test/test.dart';
@@ -291,6 +292,69 @@ void main() {
     test('compares Left and Right instances correctly', () {
       expect(eitherOrd.compare(Left(1), Right("b")), lessThan(0));
       expect(eitherOrd.compare(Right("b"), Left(1)), greaterThan(0));
+    });
+  });
+  group('sequenceList - ', () {
+    test(
+        'should convert ImmutableList<Either<E, A>> to Either<E, ImmutableList<A>>',
+        () {
+      final list =
+          il.ImmutableList<Either<String, int>>([Right(1), Right(2), Right(3)]);
+      final result = sequenceList(list);
+
+      expect(result,
+          Right<String, il.ImmutableList<int>>(il.ImmutableList([1, 2, 3])));
+    });
+
+    test('should return Left if any element is Left', () {
+      final list = il.ImmutableList<Either<String, int>>(
+          [Right(1), Left("Error"), Right(3)]);
+      final result = sequenceList(list);
+
+      expect(result, Left<String, il.ImmutableList<int>>("Error"));
+    });
+  });
+  group('traverseList tests:', () {
+    test('Should return Left when a Left is encountered', () {
+      final list = il.ImmutableList<int>([1, 2, 3]);
+      final result = traverseList<int, int, String>(
+          (n) =>
+              n == 2 ? Left<int, String>(2) : Right<int, String>(n.toString()),
+          list);
+
+      expect(result, isA<Left<int, il.ImmutableList<String>>>());
+      expect((result as Left<int, il.ImmutableList<String>>).value, 2);
+    });
+
+    test('Should return Right with transformed list if all are successful', () {
+      final list = il.ImmutableList<int>([1, 3, 4]);
+      final result = traverseList<int, int, String>(
+          (n) => Right<int, String>(n.toString()), list);
+
+      expect(result, isA<Right<int, il.ImmutableList<String>>>());
+      expect((result as Right<int, il.ImmutableList<String>>).value,
+          il.ImmutableList<String>(['1', '3', '4']));
+    });
+
+    test('Should halt on first encountered Left', () {
+      final list = il.ImmutableList<int>([1, 2, 3, 2]);
+      final result = traverseList<int, int, String>(
+          (n) =>
+              n == 2 ? Left<int, String>(2) : Right<int, String>(n.toString()),
+          list);
+
+      expect(result, isA<Left<int, il.ImmutableList<String>>>());
+      expect((result as Left<int, il.ImmutableList<String>>).value, 2);
+    });
+
+    test('Should handle empty list gracefully', () {
+      final list = il.ImmutableList<int>([]);
+      final result = traverseList<int, int, String>(
+          (n) => Right<int, String>(n.toString()), list);
+
+      expect(result, isA<Right<int, il.ImmutableList<String>>>());
+      expect((result as Right<int, il.ImmutableList<String>>).value,
+          il.ImmutableList<String>([]));
     });
   });
 }

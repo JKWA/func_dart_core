@@ -10,7 +10,7 @@
 
 - Add double
 - Add nonemptylist
-- Add listß
+- Add list
 
 ## 0.2.1
 
@@ -28,3 +28,5 @@
 ## 0.5.0
 
 - Add of, zero, flatten, compact, seperate, and filter
+- Add sequenceList and traverseList to Option and Either
+- Update ImmutableList and Option equality logic

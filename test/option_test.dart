@@ -1,4 +1,5 @@
 import 'package:func_dart_core/integer.dart';
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart';
 import 'package:test/test.dart';
 
@@ -267,6 +268,54 @@ void main() {
         'compare should return a positive number when both options are Some and first value is greater than second',
         () {
       expect(optionOrdInt.compare(Some(2), Some(1)), greaterThan(0));
+    });
+  });
+  group('sequenceList - ', () {
+    test('should convert ImmutableList<Option<A>> to Option<ImmutableList<A>>',
+        () {
+      final list = il.ImmutableList([Some(1), Some(2), Some(3)]);
+      final result = sequenceList(list);
+
+      expect(result, Some(il.ImmutableList([1, 2, 3])));
+    });
+
+    test('should return None if any element is None', () {
+      final list = il.ImmutableList<Option<int>>([Some(1), None(), Some(3)]);
+      final result = sequenceList(list);
+
+      expect(result, None<il.ImmutableList<int>>());
+    });
+  });
+
+  group('traverseList - ', () {
+    // The function used for testing. If the number is even, return Some with its double, otherwise None.
+    Option<int> doubleIfEven(int num) =>
+        num.isEven ? Some(num * 2) : None<int>();
+
+    test('should traverse the list and apply the function to its elements', () {
+      final list = il.ImmutableList<int>([2, 4, 6]);
+      final result = traverseList(doubleIfEven, list);
+
+      expect(result, Some(il.ImmutableList<int>([4, 8, 12])));
+    });
+
+    test(
+        'should return None if any element in the list results in None when the function is applied',
+        () {
+      final list1 = il.ImmutableList<int>([2, 3, 4]);
+      final result1 = traverseList(doubleIfEven, list1);
+      expect(result1, None<il.ImmutableList<int>>());
+
+      final list2 = il.ImmutableList<int>([1, 2, 3]);
+      final result2 = traverseList(doubleIfEven, list2);
+      expect(result2, None<il.ImmutableList<int>>());
+    });
+
+    test('should return Some with empty list if input list is empty', () {
+      final list = il.ImmutableList<int>([]);
+      final result = traverseList(doubleIfEven, list);
+
+      expect(result, Some(il.ImmutableList<int>([])));
     });
   });
 }
