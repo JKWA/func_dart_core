@@ -1,7 +1,22 @@
 import 'package:func_dart_core/either.dart' as e;
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart' as o;
 import 'package:func_dart_core/taskeither.dart';
 import 'package:test/test.dart';
+
+class TaskError {
+  final String message;
+  TaskError(this.message);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TaskError &&
+          runtimeType == other.runtimeType &&
+          message == other.message;
+
+  @override
+  int get hashCode => message.hashCode;
+}
 
 void main() {
   group('TaskEither - lift', () {
@@ -287,6 +302,88 @@ void main() {
       final result = await getOrElse(te, (leftValue) => 0);
 
       expect(result, 42);
+    });
+  });
+  group('sequenceListTaskEither', () {
+    test('should sequence a list of TaskEither successfully', () async {
+      var tasks = il.ImmutableList<TaskEither<String, int>>([
+        TaskEither(() => Future.value(e.Right<String, int>(1))),
+        TaskEither(() => Future.value(e.Right<String, int>(2))),
+        TaskEither(() => Future.value(e.Right<String, int>(3))),
+      ]);
+
+      var result = await sequenceListTaskEither(tasks);
+
+      expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
+      expect(
+          (result as e.Right<String, il.ImmutableList<int>>).value, [1, 2, 3]);
+    });
+
+    test('should return error if any TaskEither fails', () async {
+      var tasks = il.ImmutableList<TaskEither<String, int>>([
+        TaskEither(() => Future.value(e.Right<String, int>(1))),
+        TaskEither(() => Future.value(e.Left<String, int>("Error"))),
+        TaskEither(() => Future.value(e.Right<String, int>(3))),
+      ]);
+
+      var result = await sequenceListTaskEither(tasks);
+
+      expect(result, isA<e.Left<String, il.ImmutableList<int>>>());
+      expect((result as e.Left<String, il.ImmutableList<int>>).value, "Error");
+    });
+
+    test('should handle an empty list of TaskEither', () async {
+      var tasks = il.ImmutableList<TaskEither<String, int>>([]);
+
+      var result = await sequenceListTaskEither(tasks);
+
+      expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
+      expect((result as e.Right<String, il.ImmutableList<int>>).value,
+          il.zero<int>());
+    });
+  });
+
+  group('traverseListTaskEither - ', () {
+    test('should traverse a list of items to TaskEither successfully',
+        () async {
+      final items = il.ImmutableList<int>([1, 2, 3]);
+      TaskEither<String, int> function(int item) =>
+          TaskEither(() => Future.value(e.Right<String, int>(item * 2)));
+
+      final result = await traverseListTaskEither(function, items);
+
+      expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
+      expect((result as e.Right).value, [2, 4, 6]);
+    });
+
+    test(
+        'should return error if any function call returns a Left in TaskEither',
+        () async {
+      final items = il.ImmutableList<int>([1, 2, 3]);
+      TaskEither<String, int> function(int item) {
+        if (item == 2) {
+          return TaskEither(
+              () => Future.value(e.Left<String, int>("Error on 2")));
+        } else {
+          return TaskEither(() => Future.value(e.Right<String, int>(item * 2)));
+        }
+      }
+
+      final result = await traverseListTaskEither(function, items);
+
+      expect(result, isA<e.Left<String, il.ImmutableList<int>>>());
+      expect((result as e.Left).value, "Error on 2");
+    });
+
+    test('should handle an empty list of items', () async {
+      final items = il.ImmutableList<int>([]);
+      TaskEither<String, int> function(int item) =>
+          TaskEither(() => Future.value(e.Right<String, int>(item * 2)));
+
+      final result = await traverseListTaskEither(function, items);
+
+      expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
+      expect((result as e.Right).value, il.zero<int>());
     });
   });
 }

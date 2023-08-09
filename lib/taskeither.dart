@@ -1,4 +1,5 @@
 import 'package:func_dart_core/either.dart';
+import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart' as o;
 import 'package:func_dart_core/predicate.dart';
 
@@ -255,4 +256,121 @@ Future<B> getOrElse<A, B>(
     return result.value;
   }
   throw Exception("TaskEither must be Left or Right");
+}
+
+/// Sequences a list of `TaskEither` into a single `TaskEither` that produces a list of results.
+///
+/// If any of the `TaskEither` computations in the list results in a `Left`,
+/// the whole computation will short-circuit and return that `Left`.
+/// If all computations are successful (i.e., they all result in a `Right`),
+/// a single `Right` containing a list of all the results is returned.
+///
+/// Example:
+/// ```dart
+/// final taskEithers = il.ImmutableList<TaskEither<String, int>>([
+///   TaskEither(() => Future.value(Right<String, int>(1))),
+///   TaskEither(() => Future.value(Right<String, int>(2))),
+///   TaskEither(() => Future.value(Right<String, int>(3))),
+/// ]);
+///
+/// final result = await sequenceListTaskEither(taskEithers);
+///
+/// if (result is Right) {
+///   print(result.value); // Expected output: [1, 2, 3]
+/// }
+/// ```
+///
+/// Error handling example:
+/// ```dart
+/// final taskEithers = il.ImmutableList<TaskEither<String, int>>([
+///   TaskEither(() => Future.value(Right<String, int>(1))),
+///   TaskEither(() => Future.value(Left<String, int>("Error"))),
+///   TaskEither(() => Future.value(Right<String, int>(3))),
+/// ]);
+///
+/// final result = await sequenceListTaskEither(taskEithers);
+///
+/// if (result is Left) {
+///   print(result.value); // Expected output: "Error"
+/// }
+/// ```
+///
+/// @param list The list of `TaskEither` computations to be sequenced.
+/// @return A `Future` that resolves to an `Either` containing either an error
+/// or a list of results.
+Future<Either<A, il.ImmutableList<B>>> sequenceListTaskEither<A, B>(
+    il.ImmutableList<TaskEither<A, B>> list) async {
+  final results = <B>[];
+
+  for (var taskEither in list) {
+    Either<A, B> result = await taskEither.taskEither();
+    if (result is Left<A, B>) {
+      return Left(result.value);
+    }
+    results.add((result as Right<A, B>).value);
+  }
+
+  return Right(il.of(results));
+}
+
+/// Traverses a list of items, applying a function to each item, and then
+/// sequences the resulting list of `TaskEither` into a single `TaskEither` that
+/// produces a list of results.
+///
+/// The provided function `f` should transform an item of type `A` into a `TaskEither<E, B>`.
+///
+/// If any of the transformed `TaskEither` computations results in a `Left`,
+/// the whole computation will short-circuit and return that `Left`.
+/// If all computations are successful (i.e., they all result in a `Right`),
+/// a single `Right` containing a list of all the results is returned.
+///
+/// Example:
+/// ```dart
+/// final items = il.ImmutableList<int>([1, 2, 3]);
+/// TaskEither<String, int> doublingFunction(int item) =>
+///   TaskEither(() => Future.value(Right<String, int>(item * 2)));
+///
+/// final result = await traverseListTaskEither(doublingFunction, items);
+///
+/// if (result is Right) {
+///   print(result.value); // Expected output: [2, 4, 6]
+/// }
+/// ```
+///
+/// Error handling example:
+/// ```dart
+/// final items = il.ImmutableList<int>([1, 2, 3]);
+/// TaskEither<String, int> functionWithError(int item) {
+///   if (item == 2) {
+///     return TaskEither(() => Future.value(Left<String, int>("Error on 2")));
+///   } else {
+///     return TaskEither(() => Future.value(Right<String, int>(item * 2)));
+///   }
+/// }
+///
+/// final result = await traverseListTaskEither(functionWithError, items);
+///
+/// if (result is Left) {
+///   print(result.value); // Expected output: "Error on 2"
+/// }
+/// ```
+///
+/// @param f The function to be applied to each item in the list.
+/// @param list The list of items to traverse.
+/// @return A `Future` that resolves to an `Either` containing either an error
+/// or a list of results.
+Future<Either<E, il.ImmutableList<B>>> traverseListTaskEither<E, A, B>(
+    TaskEither<E, B> Function(A) f, il.ImmutableList<A> list) async {
+  final results = <B>[];
+
+  for (final item in list) {
+    final result = await f(item).taskEither();
+
+    if (result is Left<E, B>) {
+      return Left<E, il.ImmutableList<B>>(result.value);
+    }
+    results.add((result as Right<E, B>).value);
+  }
+
+  return Right<E, il.ImmutableList<B>>(il.ImmutableList<B>(results));
 }

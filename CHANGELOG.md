@@ -28,5 +28,7 @@
 ## 0.5.0
 
 - Add of, zero, flatten, compact, seperate, and filter
-- Add sequenceList and traverseList to Option and Either
+- Add sequenceList and traverseList to Option
+- Add sequenceList and traverseList to Either
+- Add sequenceList and traverseList to TaskEither
 - Update ImmutableList and Option equality logic
