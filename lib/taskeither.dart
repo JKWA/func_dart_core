@@ -273,7 +273,7 @@ Future<B> getOrElse<A, B>(
 ///   TaskEither(() => Future.value(Right<String, int>(3))),
 /// ]);
 ///
-/// final result = await sequenceListTaskEither(taskEithers);
+/// final result = await sequenceList(taskEithers);
 ///
 /// if (result is Right) {
 ///   print(result.value); // Expected output: [1, 2, 3]
@@ -288,7 +288,7 @@ Future<B> getOrElse<A, B>(
 ///   TaskEither(() => Future.value(Right<String, int>(3))),
 /// ]);
 ///
-/// final result = await sequenceListTaskEither(taskEithers);
+/// final result = await sequenceList(taskEithers);
 ///
 /// if (result is Left) {
 ///   print(result.value); // Expected output: "Error"
@@ -298,7 +298,7 @@ Future<B> getOrElse<A, B>(
 /// @param list The list of `TaskEither` computations to be sequenced.
 /// @return A `Future` that resolves to an `Either` containing either an error
 /// or a list of results.
-Future<Either<A, il.ImmutableList<B>>> sequenceListTaskEither<A, B>(
+Future<Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
     il.ImmutableList<TaskEither<A, B>> list) async {
   final results = <B>[];
 
@@ -330,7 +330,7 @@ Future<Either<A, il.ImmutableList<B>>> sequenceListTaskEither<A, B>(
 /// TaskEither<String, int> doublingFunction(int item) =>
 ///   TaskEither(() => Future.value(Right<String, int>(item * 2)));
 ///
-/// final result = await traverseListTaskEither(doublingFunction, items);
+/// final result = await traverseList(doublingFunction, items);
 ///
 /// if (result is Right) {
 ///   print(result.value); // Expected output: [2, 4, 6]
@@ -348,7 +348,7 @@ Future<Either<A, il.ImmutableList<B>>> sequenceListTaskEither<A, B>(
 ///   }
 /// }
 ///
-/// final result = await traverseListTaskEither(functionWithError, items);
+/// final result = await traverseList(functionWithError, items);
 ///
 /// if (result is Left) {
 ///   print(result.value); // Expected output: "Error on 2"
@@ -359,7 +359,7 @@ Future<Either<A, il.ImmutableList<B>>> sequenceListTaskEither<A, B>(
 /// @param list The list of items to traverse.
 /// @return A `Future` that resolves to an `Either` containing either an error
 /// or a list of results.
-Future<Either<E, il.ImmutableList<B>>> traverseListTaskEither<E, A, B>(
+Future<Either<E, il.ImmutableList<B>>> traverseList<E, A, B>(
     TaskEither<E, B> Function(A) f, il.ImmutableList<A> list) async {
   final results = <B>[];
 

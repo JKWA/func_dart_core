@@ -304,7 +304,7 @@ void main() {
       expect(result, 42);
     });
   });
-  group('sequenceListTaskEither', () {
+  group('sequenceList', () {
     test('should sequence a list of TaskEither successfully', () async {
       var tasks = il.ImmutableList<TaskEither<String, int>>([
         TaskEither(() => Future.value(e.Right<String, int>(1))),
@@ -312,7 +312,7 @@ void main() {
         TaskEither(() => Future.value(e.Right<String, int>(3))),
       ]);
 
-      var result = await sequenceListTaskEither(tasks);
+      var result = await sequenceList(tasks);
 
       expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
       expect(
@@ -326,7 +326,7 @@ void main() {
         TaskEither(() => Future.value(e.Right<String, int>(3))),
       ]);
 
-      var result = await sequenceListTaskEither(tasks);
+      var result = await sequenceList(tasks);
 
       expect(result, isA<e.Left<String, il.ImmutableList<int>>>());
       expect((result as e.Left<String, il.ImmutableList<int>>).value, "Error");
@@ -335,7 +335,7 @@ void main() {
     test('should handle an empty list of TaskEither', () async {
       var tasks = il.ImmutableList<TaskEither<String, int>>([]);
 
-      var result = await sequenceListTaskEither(tasks);
+      var result = await sequenceList(tasks);
 
       expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
       expect((result as e.Right<String, il.ImmutableList<int>>).value,
@@ -343,14 +343,14 @@ void main() {
     });
   });
 
-  group('traverseListTaskEither - ', () {
+  group('traverseList - ', () {
     test('should traverse a list of items to TaskEither successfully',
         () async {
       final items = il.ImmutableList<int>([1, 2, 3]);
       TaskEither<String, int> function(int item) =>
           TaskEither(() => Future.value(e.Right<String, int>(item * 2)));
 
-      final result = await traverseListTaskEither(function, items);
+      final result = await traverseList(function, items);
 
       expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
       expect((result as e.Right).value, [2, 4, 6]);
@@ -369,7 +369,7 @@ void main() {
         }
       }
 
-      final result = await traverseListTaskEither(function, items);
+      final result = await traverseList(function, items);
 
       expect(result, isA<e.Left<String, il.ImmutableList<int>>>());
       expect((result as e.Left).value, "Error on 2");
@@ -380,7 +380,7 @@ void main() {
       TaskEither<String, int> function(int item) =>
           TaskEither(() => Future.value(e.Right<String, int>(item * 2)));
 
-      final result = await traverseListTaskEither(function, items);
+      final result = await traverseList(function, items);
 
       expect(result, isA<e.Right<String, il.ImmutableList<int>>>());
       expect((result as e.Right).value, il.zero<int>());
