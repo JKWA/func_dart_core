@@ -20,3 +20,7 @@
 
 - Add flip to function
 - Add intersection and symmetricDifference to list
+
+## 0.4.0
+
+- Add every, isSubset, isSuperset and similar to list

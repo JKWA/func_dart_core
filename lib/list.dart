@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:func_dart_core/eq.dart';
+import 'package:func_dart_core/function.dart';
 import 'package:func_dart_core/option.dart' as option;
 import 'package:func_dart_core/predicate.dart';
 
@@ -871,4 +872,105 @@ option.Option<ImmutableList<T>> Function(ImmutableList<T>) modifyAt<T>(
 option.Option<ImmutableList<T>> Function(ImmutableList<T>) updateAt<T>(
     int index, T value) {
   return modifyAt(index, (_) => value);
+}
+
+/// Checks if all the items in the provided [ImmutableList] satisfy the given predicate.
+///
+/// The [every] function will iterate over each item in the list and apply the provided predicate.
+/// It will return `true` if every item satisfies the predicate, or `false` otherwise.
+///
+/// Example:
+/// ```dart
+/// final list = ImmutableList([1, 2, 3, 4, 5]);
+///
+/// final allPositive = every(list, (num) => num > 0);
+/// print(allPositive); // true
+///
+/// final allEven = every(list, (num) => num % 2 == 0);
+/// print(allEven); // false
+/// ```
+///
+/// [list]: The [ImmutableList] whose items are to be tested.
+/// [predicate]: A function that a value in the list has to satisfy.
+bool every<T>(ImmutableList<T> list, bool Function(T) predicate) {
+  return list.items.every(predicate);
+}
+
+/// Determines if one [ImmutableList] is a subset of another [ImmutableList] using a curried function.
+///
+/// This function checks if all items in the first list (`subsetCandidate`) are contained
+/// in the second list (`set`). It uses a custom equality comparer [Eq<T>] to
+/// determine if elements are the same.
+///
+/// Example:
+/// ```dart
+/// final list1 = ImmutableList([1, 2, 3]);
+/// final list2 = ImmutableList([1, 2, 3, 4, 5]);
+/// final intEq = Eq<int>((a, b) => a == b);
+///
+/// final check = isSubset(intEq)(list2);
+/// print(check(list1)); // true
+/// ```
+///
+/// [eq]: An equality comparer that checks if two items of type [T] are the same.
+bool Function(ImmutableList<T> subsetCandidate) Function(ImmutableList<T> set)
+    isSubset<T>(Eq<T> eq) {
+  return (ImmutableList<T> set) {
+    return (ImmutableList<T> subsetCandidate) {
+      return every(
+          subsetCandidate, (x) => set.items.any((y) => eq.equals(x, y)));
+    };
+  };
+}
+
+/// Determines whether one list is a superset of another list.
+///
+/// A superset means that all elements in the second list (potential subset)
+/// are contained in the first list (potential superset).
+///
+/// The function leverages an [Eq] instance to determine equality between elements.
+///
+/// Example:
+/// ```dart
+/// final eqInt = Eq<int>((a, b) => a == b);
+/// final list1 = ImmutableList([1, 2, 3, 4, 5]);
+/// final list2 = ImmutableList([1, 2, 3]);
+///
+/// final check = isSuperset(eqInt)(list1);
+/// assert(check(list2) == true);  // because list1 is a superset of list2
+/// ```
+///
+/// [Eq]: A type class that defines how to compare the equality of two values of the same type.
+bool Function(ImmutableList<T> set) Function(ImmutableList<T> supersetCandidate)
+    isSuperset<T>(Eq<T> eq) {
+  return flip(isSubset(eq));
+}
+
+/// Computes the Jaccard index between two lists.
+///
+/// The Jaccard index, also known as the Jaccard similarity coefficient,
+/// is a statistic used for gauging the similarity and diversity of sample sets.
+double _jaccardIndex<T>(
+    ImmutableList<T> list1, ImmutableList<T> list2, Eq<T> eq) {
+  final intersectionSize = intersection(eq)(list1)(list2).length;
+  final unionSize = union(eq)(list1)(list2).length;
+
+  if (unionSize == 0) {
+    return 0.0; // To handle cases where both sets are empty
+  }
+
+  return intersectionSize / unionSize;
+}
+
+/// Determines how similar two lists are based on the Jaccard Index.
+///
+/// The function returns a value between 0 and 1, where 1 means the lists are identical,
+/// and 0 means they have no elements in common.
+double Function(ImmutableList<T>) Function(ImmutableList<T>) similar<T>(
+    Eq<T> eq) {
+  return (ImmutableList<T> list1) {
+    return (ImmutableList<T> list2) {
+      return _jaccardIndex(list1, list2, eq);
+    };
+  };
 }

@@ -1,6 +1,6 @@
 name: func_dart_core
 description: A functional programming library for Dart
-version: 0.3.0
+version: 0.4.0
 repository: https://github.com/JKWA/func_dart_core
 homepage: https://jkwa.github.io/func_dart_core/index.html
 issue_tracker: https://github.com/JKWA/func_dart_core/issues

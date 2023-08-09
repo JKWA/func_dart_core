@@ -439,4 +439,124 @@ void main() {
       expect(updatedListOpt is option.None<ImmutableList<int>>, isTrue);
     });
   });
+  group('every - :', () {
+    test('should all be positive', () {
+      final list = ImmutableList([1, 2, 3, 4, 5]);
+      expect(every(list, (n) => n > 0), true);
+    });
+
+    test('should NOT all be even', () {
+      final list = ImmutableList([1, 2, 3, 4, 5]);
+      expect(every(list, (n) => n % 2 == 0), false);
+    });
+
+    test('empty list should return true', () {
+      final list = ImmutableList([]);
+      expect(every(list, (n) => n % 2 == 0), true);
+    });
+
+    test('should be true with nulls', () {
+      final list = ImmutableList<int?>([1, 2, null, 4, 5]);
+      expect(every(list, (n) => n == null || n > 0), true);
+    });
+  });
+  group('isSubset -', () {
+    test('should confirm that a list is a subset of another', () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([1, 2, 3, 4, 5]);
+      final check = isSubset(eqInt)(list2);
+      expect(check(list1), true);
+    });
+
+    test('should confirm that a list is not a subset of another', () {
+      final list1 = ImmutableList([1, 2, 6]);
+      final list2 = ImmutableList([1, 2, 3, 4, 5]);
+      final check = isSubset(eqInt)(list2);
+      expect(check(list1), false);
+    });
+
+    test('should return true for identical lists', () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([1, 2, 3]);
+      final check = isSubset(eqInt)(list2);
+      expect(check(list1), true);
+    });
+
+    test('should return false when the subset candidate is longer than the set',
+        () {
+      final list1 = ImmutableList([1, 2, 3, 4, 5]);
+      final list2 = ImmutableList([1, 2, 3]);
+      final check = isSubset(eqInt)(list2);
+
+      expect(check(list1), false);
+    });
+  });
+  group('isSuperset - ', () {
+    test('should confirm that a list is a superset of another', () {
+      final list1 = ImmutableList([1, 2, 3, 4, 5]);
+      final list2 = ImmutableList([1, 2, 3]);
+      final check = isSuperset(eqInt)(list2);
+      expect(check(list1), true);
+    });
+
+    test('should confirm that a list is not a superset of another', () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([1, 2, 3, 4, 5]);
+      final check = isSuperset(eqInt)(list2);
+      expect(check(list1), false);
+    });
+
+    test('should return true for identical lists', () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([1, 2, 3]);
+      final check = isSuperset(eqInt)(list1);
+      expect(check(list2), true);
+    });
+
+    test(
+        'should return true when the superset candidate is shorter than the subset',
+        () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([1, 2, 3, 4, 5]);
+      final check = isSuperset(eqInt)(list1);
+      expect(check(list2), true);
+    });
+  });
+
+  group('similar - ', () {
+    test('should return 1 for two identical lists', () {
+      final list1 = ImmutableList([1, 2, 3, 4, 5]);
+      final list2 = ImmutableList([1, 2, 3, 4, 5]);
+      final similarityScore = similar(eqInt)(list1)(list2);
+      expect(similarityScore, 1.0);
+    });
+
+    test('should return 0 for two completely different lists', () {
+      final list1 = ImmutableList([1, 2, 3]);
+      final list2 = ImmutableList([4, 5, 6]);
+      final similarityScore = similar(eqInt)(list1)(list2);
+      expect(similarityScore, 0.0);
+    });
+
+    test('should calculate similarity for partially overlapping lists', () {
+      final list1 = ImmutableList([1, 2, 3, 4, 5]);
+      final list2 = ImmutableList([4, 5, 6, 7, 8]);
+      final similarityScore = similar(eqInt)(list1)(list2);
+      expect(similarityScore, 2 / 8); // Intersection = 2, Union = 8
+    });
+
+    test('should handle empty lists appropriately', () {
+      final list1 = ImmutableList<int>([]);
+      final list2 = ImmutableList<int>([]);
+      final similarityScore = similar(eqInt)(list1)(list2);
+      expect(similarityScore, 0.0); // As both lists are empty
+    });
+
+    test('should handle one empty list and one non-empty list', () {
+      final list1 = ImmutableList<int>([]);
+      final list2 = ImmutableList([1, 2, 3]);
+      final similarityScore = similar(eqInt)(list1)(list2);
+      expect(similarityScore, 0.0); // No intersection
+    });
+  });
 }
