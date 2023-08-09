@@ -1051,7 +1051,7 @@ ImmutableList<A> compact<A>(ImmutableList<option.Option<A>> listOfOptions) =>
         ? ImmutableList<A>([value.value])
         : ImmutableList<A>([]))(listOfOptions);
 
-/// Separates a list of [either.Either] values into two lists: one containing all the [either.Left] values and the other containing all the [Right] values.
+/// Separates a list of [either.Either] values into two lists: one containing all the [either.Left] values and the other containing all the [either.Right] values.
 ///
 /// Given an [ImmutableList] of [either.Either]s, this function will produce a record containing two [ImmutableList]s:
 /// one for values that are [either.Left] and another for values that are [either.Right].

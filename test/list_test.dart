@@ -1,9 +1,8 @@
+import 'package:func_dart_core/either.dart' as either;
 import 'package:func_dart_core/integer.dart';
 import 'package:func_dart_core/list.dart' hide group;
 import 'package:func_dart_core/list.dart' as l;
 import 'package:func_dart_core/option.dart' as option;
-import 'package:func_dart_core/either.dart' as either;
-
 import 'package:test/test.dart';
 
 void main() {
