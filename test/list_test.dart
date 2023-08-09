@@ -2,6 +2,8 @@ import 'package:func_dart_core/integer.dart';
 import 'package:func_dart_core/list.dart' hide group;
 import 'package:func_dart_core/list.dart' as l;
 import 'package:func_dart_core/option.dart' as option;
+import 'package:func_dart_core/either.dart' as either;
+
 import 'package:test/test.dart';
 
 void main() {
@@ -557,6 +559,138 @@ void main() {
       final list2 = ImmutableList([1, 2, 3]);
       final similarityScore = similar(eqInt)(list1)(list2);
       expect(similarityScore, 0.0); // No intersection
+    });
+  });
+
+  group('separate - ', () {
+    test('should separate a list of Eithers into lefts and rights', () {
+      final eithers = ImmutableList([
+        either.Left<int, String>(1),
+        either.Right<int, String>('a'),
+        either.Left<int, String>(2),
+        either.Right<int, String>('b'),
+      ]);
+
+      final result = separate(eithers);
+
+      expect(result.lefts, equals(ImmutableList([1, 2])));
+      expect(result.rights, equals(ImmutableList(['a', 'b'])));
+    });
+
+    test('should return empty lefts and rights for an empty list', () {
+      final eithers = ImmutableList<either.Either<int, String>>([]);
+
+      final result = separate(eithers);
+
+      expect(result.lefts, isEmpty);
+      expect(result.rights, isEmpty);
+    });
+
+    test('should return all lefts and empty rights if Eithers are all lefts',
+        () {
+      final eithers = ImmutableList([
+        either.Left<int, String>(1),
+        either.Left<int, String>(2),
+        either.Left<int, String>(3),
+      ]);
+
+      final result = separate(eithers);
+
+      expect(result.lefts, equals(ImmutableList([1, 2, 3])));
+      expect(result.rights, isEmpty);
+    });
+
+    test('should return all rights and empty lefts if Eithers are all rights',
+        () {
+      final eithers = ImmutableList([
+        either.Right<int, String>('a'),
+        either.Right<int, String>('b'),
+        either.Right<int, String>('c'),
+      ]);
+
+      final result = separate(eithers);
+
+      expect(result.lefts, isEmpty);
+      expect(result.rights, equals(ImmutableList(['a', 'b', 'c'])));
+    });
+  });
+  group('compact function', () {
+    test('should compact a list of options into a list of values', () {
+      final optionsList = ImmutableList<option.Option<int>>([
+        option.Some(1),
+        option.None(),
+        option.Some(2),
+        option.None(),
+        option.Some(3),
+      ]);
+
+      final result = compact(optionsList);
+
+      expect(result, ImmutableList([1, 2, 3]));
+    });
+
+    test('should return an empty list when all options are None', () {
+      final optionsList = ImmutableList<option.Option<int>>([
+        option.None(),
+        option.None(),
+        option.None(),
+      ]);
+
+      final result = compact(optionsList);
+
+      expect(result, ImmutableList([]));
+    });
+
+    test('should return a list of all values when all options are Some', () {
+      final optionsList = ImmutableList<option.Option<int>>([
+        option.Some(1),
+        option.Some(2),
+        option.Some(3),
+      ]);
+
+      final result = compact(optionsList);
+
+      expect(result, ImmutableList([1, 2, 3]));
+    });
+  });
+  test('of should create an ImmutableList from an iterable', () {
+    final list = of<int>([1, 2, 3, 4]);
+    expect(list, ImmutableList([1, 2, 3, 4]));
+  });
+
+  test('zero should return an empty ImmutableList', () {
+    final list = zero<int>();
+    expect(list, ImmutableList([]));
+  });
+
+  test('flatten should transform a nested ImmutableList into a flat one', () {
+    final nestedList = ImmutableList<ImmutableList<int>>([
+      ImmutableList<int>([1, 2]),
+      ImmutableList<int>([3, 4]),
+    ]);
+    final flatList = flatten<int>(nestedList);
+    expect(flatList, ImmutableList([1, 2, 3, 4]));
+  });
+  group('filter - ', () {
+    test('should retain elements that satisfy the predicate', () {
+      final list = ImmutableList<int>([1, 2, 3, 4, 5]);
+      final evens = filter<int>((n) => n % 2 == 0)(list);
+      expect(evens, ImmutableList<int>([2, 4]));
+    });
+
+    test('should return an empty list if no elements satisfy the predicate',
+        () {
+      final list = ImmutableList<int>([1, 3, 5, 7, 9]);
+      final evens = filter<int>((n) => n % 2 == 0)(list);
+      expect(evens, ImmutableList<int>([]));
+    });
+
+    test(
+        'should return the original list if all elements satisfy the predicate',
+        () {
+      final list = ImmutableList<int>([2, 4, 6, 8, 10]);
+      final evens = filter<int>((n) => n % 2 == 0)(list);
+      expect(evens, list);
     });
   });
 }

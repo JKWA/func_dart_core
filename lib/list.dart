@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:func_dart_core/either.dart' as either;
 import 'package:func_dart_core/eq.dart';
 import 'package:func_dart_core/function.dart';
 import 'package:func_dart_core/option.dart' as option;
@@ -974,3 +975,143 @@ double Function(ImmutableList<T>) Function(ImmutableList<T>) similar<T>(
     };
   };
 }
+
+/// Creates an [ImmutableList] from the provided iterable [items].
+///
+/// This function constructs an unmodifiable [ImmutableList] from a given
+/// iterable of items.
+///
+/// Example:
+/// ```dart
+/// final list = of<int>([1, 2, 3, 4]);
+/// print(list);  // Outputs: ImmutableList([1, 2, 3, 4])
+/// ```
+///
+/// @param items An iterable to be converted into an [ImmutableList].
+/// @return An [ImmutableList] containing all the elements of [items].
+ImmutableList<T> of<T>(Iterable<T> items) =>
+    ImmutableList<T>(List<T>.unmodifiable(items));
+
+/// Returns an empty [ImmutableList] of the specified type.
+///
+/// Example:
+/// ```dart
+/// final list = zero<int>();
+/// print(list);  // Outputs: ImmutableList([])
+/// ```
+///
+/// @return An empty [ImmutableList] of type T.
+ImmutableList<T> zero<T>() => ImmutableList<T>([]);
+
+/// Flattens a nested [ImmutableList] into a single-dimensional [ImmutableList].
+///
+/// Given an [ImmutableList] containing other [ImmutableList]s as elements,
+/// this function will flatten it into a single-dimensional list.
+///
+/// Example:
+/// ```dart
+/// final nestedList = ImmutableList<ImmutableList<int>>([
+///   ImmutableList<int>([1, 2]),
+///   ImmutableList<int>([3, 4]),
+/// ]);
+/// final flatList = flatten<int>(nestedList);
+/// print(flatList);  // Outputs: ImmutableList([1, 2, 3, 4])
+/// ```
+///
+/// @param nestedList An [ImmutableList] of [ImmutableList]s.
+/// @return A flattened [ImmutableList].
+ImmutableList<T> flatten<T>(ImmutableList<ImmutableList<T>> nestedList) {
+  return flatMap<ImmutableList<T>, T>(identity)(nestedList);
+}
+
+/// Compacts a list by filtering out `None` values and extracting values from `Some` options.
+///
+/// The `compact` function transforms an [ImmutableList] of [option.Option] values into an [ImmutableList]
+/// containing only the values inside the `Some` options, effectively filtering out any `None` values.
+///
+/// Example:
+/// ```dart
+/// final optionsList = ImmutableList<option.Option<int>>([
+///   option.Some(1),
+///   option.None(),
+///   option.Some(2),
+///   option.None(),
+///   option.Some(3),
+/// ]);
+///
+/// final compacted = compact(optionsList);
+///
+/// print(compacted);  // Outputs: ImmutableList([1, 2, 3])
+/// ```
+///
+/// @param listOfOptions An [ImmutableList] of [option.Option] values to be compacted.
+/// @return An [ImmutableList] containing only the values from `Some` options.
+ImmutableList<A> compact<A>(ImmutableList<option.Option<A>> listOfOptions) =>
+    flatMap<option.Option<A>, A>((value) => value is option.Some<A>
+        ? ImmutableList<A>([value.value])
+        : ImmutableList<A>([]))(listOfOptions);
+
+/// Separates a list of [either.Either] values into two lists: one containing all the [either.Left] values and the other containing all the [Right] values.
+///
+/// Given an [ImmutableList] of [either.Either]s, this function will produce a record containing two [ImmutableList]s:
+/// one for values that are [either.Left] and another for values that are [either.Right].
+///
+/// Examples:
+/// ```dart
+/// final eithers = ImmutableList([
+///   Left<int, String>(1),
+///   Right<int, String>('a'),
+///   Left<int, String>(2),
+///   Right<int, String>('b'),
+/// ]);
+///
+/// final result = separate(eithers);
+///
+/// print(result.lefts);  // Outputs: ImmutableList([1, 2])
+/// print(result.rights); // Outputs: ImmutableList(['a', 'b'])
+/// ```
+///
+/// When provided with an empty list:
+/// ```dart
+/// final emptyEithers = ImmutableList<either.Either<int, String>>([]);
+///
+/// final emptyResult = separate(emptyEithers);
+///
+/// print(emptyResult.lefts);  // Outputs: ImmutableList([])
+/// print(emptyResult.rights); // Outputs: ImmutableList([])
+/// ```
+///
+/// @param eithers An [ImmutableList] of [either.Either] values to be separated.
+/// @return A record with two properties: `lefts` and `rights` which are [ImmutableList]s containing the separated values.
+({ImmutableList<A> lefts, ImmutableList<B> rights}) separate<A, B>(
+        ImmutableList<either.Either<A, B>> eithers) =>
+    foldLeft<
+        either.Either<A, B>,
+        ({
+          ImmutableList<A> lefts,
+          ImmutableList<B> rights
+        })>((lefts: zero<A>(), rights: zero<B>()))((acc, curr) {
+      if (curr is either.Left<A, B>) {
+        return (lefts: append(curr.value)(acc.lefts), rights: acc.rights);
+      } else if (curr is either.Right<A, B>) {
+        return (lefts: acc.lefts, rights: append(curr.value)(acc.rights));
+      }
+      return acc;
+    })(eithers);
+
+/// Filters the elements of an [ImmutableList] based on a predicate.
+///
+/// The returned list contains all elements for which the provided
+/// predicate [pred] returns `true`.
+///
+/// Example:
+/// ```dart
+/// final numbers = ImmutableList<int>([1, 2, 3, 4, 5]);
+/// final evens = filter<int>((n) => n % 2 == 0)(numbers);
+/// print(evens); // Outputs: ImmutableList([2, 4])
+/// ```
+///
+/// [pred]: The filtering predicate.
+/// Returns: A new [ImmutableList] with elements that satisfy the predicate.
+ImmutableList<T> Function(ImmutableList<T>) filter<T>(bool Function(T) pred) =>
+    (ImmutableList<T> list) => ImmutableList(list._items.where(pred).toList());

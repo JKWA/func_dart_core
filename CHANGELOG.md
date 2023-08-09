@@ -24,3 +24,7 @@
 ## 0.4.0
 
 - Add every, isSubset, isSuperset and similar to list
+
+## 0.5.0
+
+- Add of, zero, flatten, compact, seperate, and filter
