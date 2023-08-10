@@ -79,50 +79,12 @@ Either<A, B> of<A, B>(B value) {
   return right<A, B>(value);
 }
 
-/// A type refinement function to check if an [either] is of type `Left`.
-///
-/// Example:
-/// ```dart
-/// Either<int, String> leftEither = Left(42);
-/// Either<int, String> rightEither = Right('Hello');
-///
-/// if (isLeft(leftEither)) {
-///   print("This will be executed because 'leftEither' is Left.");
-/// } else {
-///   print("This will not be executed because 'leftEither' is not Left.");
-/// }
-///
-/// if (isLeft(rightEither)) {
-///   print("This will not be executed because 'rightEither' is not Left.");
-/// } else {
-///   print("This will be executed because 'rightEither' is not Left.");
-/// }
-/// ```
-bool isLeft<A, B>(Either<A, B> either) {
-  return either is Left<A, B>;
-}
-
-/// A type refinement function to check if an [either] is of type `Right`.
-///
-/// Example:
-/// ```dart
-/// Either<int, String> leftEither = Left(42);
-/// Either<int, String> rightEither = Right('Hello');
-///
-/// if (isRight(rightEither)) {
-///   print("This will be executed because 'rightEither' is Right.");
-/// } else {
-///   print("This will not be executed because 'rightEither' is not Right.");
-/// }
-///
-/// if (isRight(leftEither)) {
-///   print("This will not be executed because 'leftEither' is not Right.");
-/// } else {
-///   print("This will be executed because 'leftEither' is not Right.");
-/// }
-/// ```
-bool isRight<A, B>(Either<A, B> either) {
-  return either is Right<A, B>;
+Either<B, A> swap<A, B>(Either<A, B> either) {
+  if (either is Right<A, B>) {
+    return Left<B, A>(either.value);
+  } else {
+    return Right<B, A>((either as Left<A, B>).value);
+  }
 }
 
 /// A function that takes a predicate and a function that produces a leftValue.

@@ -338,3 +338,6 @@ NonEmptyList<B> Function(NonEmptyList<A>) ap<A, B>(
         NonEmptyList<B Function(A)> fns) =>
     (NonEmptyList<A> list) =>
         NonEmptyList(fns._items.expand((fn) => list._items.map(fn)).toList());
+
+NonEmptyList<T> of<T>(Iterable<T> items) =>
+    NonEmptyList<T>(List<T>.unmodifiable(items));

@@ -160,26 +160,6 @@ void main() {
       expect(stringOption, isA<None<String>>());
     });
   });
-  group('type refinements', () {
-    test('isNone function with different types', () {
-      Option<double> someOption = Some(3.14);
-      Option<int> noneOption = const None();
-      Option<List<int>> anotherNoneOption = const None();
-
-      expect(isNone(someOption), false);
-      expect(isNone(noneOption), true);
-      expect(isNone(anotherNoneOption), true);
-    });
-    test('isSome function with different types', () {
-      Option<double> someOption = Some(3.14);
-      Option<int> noneOption = const None();
-      Option<List<int>> anotherNoneOption = const None();
-
-      expect(isSome(someOption), true);
-      expect(isSome(noneOption), false);
-      expect(isSome(anotherNoneOption), false);
-    });
-  });
   group('tap', () {
     test('tap with Some', () {
       Option<String> someOption = Some("Hello");

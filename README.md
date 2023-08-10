@@ -60,6 +60,81 @@ Navigating this codebase reveals specific conventions in pattern matching, chose
 
 By following these conventions, this library offers a coherent and intuitive experience, allowing developers to focus on their logic and functionality rather than on the intricacies of structure.
 
+## Understanding the Absence of refinements such as `isRight`, `isLeft`, `isNone`, and `isSome`
+
+Many functional programming libraries provide, refinement functions such as `isRight`, `isLeft`, `isNone`, and `isSome`. However, in this library these refinement functions are conspicuously absent. Here's why.
+
+### Dart's Type System Limitations
+
+Dart, unlike some languages that have more advanced type refinement capabilities (e.g., TypeScript or Haskell), doesn't refine types within conditional blocks based on predicates.
+
+For example, consider the tempting pattern:
+
+```dart
+if (isLeft(myEither)) {
+
+    return Left(myEither.value);  // type error
+
+}
+```
+
+Even if `isLeft` returns true, Dart's type system won't refine the type of `myEither` within the block. This means you can't access `.value`.
+
+### Safety Concerns with isLeft via `extension`
+
+This extension would provide a convenient way to work with `Either` types. However, this is not type safe. Here's why:
+
+```dart
+extension EitherExtensions<A, B> on Either<A, B> {
+  bool get isLeft => this is Left<A, B>;
+
+  A get left {
+    if (this is Left<A, B>) {
+      return (this as Left<A, B>).value;
+    }
+    throw Exception("Trying to access leftValue of a Right Either variant.");
+  }
+}
+```
+
+While the `isLeft` getter informs you if the `Either` is of the `Left` variant, the `left` getter will to return the value of the `Left` without any inherent safety checks. If you, mistakenly or unknowingly, call `left` on an `Either` instance that's a `Right`, it will result in a runtime exception.
+
+This design has the potential to introduce bugs and unexpected crashes, especially if proper precautions are not taken before accessing `leftValue`. While the exception message is clear, relying on runtime exceptions for flow control is generally discouraged as it goes against the principle of writing predictable and fail-safe code.
+
+### The Recommended Alternative
+
+In lieu of these helper functions, it's more idiomatic and safer in Dart to use direct type checks. For example:
+
+```dart
+if (myEither is Left<ErrorType, SuccessType>) {
+  // Handle Left variant
+  var left = myEither.value;
+} else if (myEither is Right<ErrorType, SuccessType>) {
+  // Handle Right variant
+  var right = myEither.value;
+}
+```
+
+And for `Option`:
+
+```dart
+if (myOption is Some<ValueType>) {
+  var value = myOption.value;
+} else if (myOption is None<ValueType>) {
+  // Handle None case
+}
+```
+
+This approach is more explicit and leans on Dart's built-in type checking to ensure safety.
+
+### Conclusion
+
+While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code. We advise users of this library to directly handle variants, thereby making full use of Dart's type system for safer code.
+
+---
+
+Feel free to tweak this to fit the style and tone of your README or library documentation.
+
 ## Usage
 
 See `/example` folder.

@@ -33,5 +33,6 @@
 - Add sequenceList and traverseList to TaskEither
 - Update ImmutableList and Option equality logic
 - Invert match order for Predicate
-- Add basic validation example
+- Add validation examples
+- Remove refinements
 - Update README

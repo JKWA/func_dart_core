@@ -9,13 +9,12 @@ void main() {
   group('Either lift - ', () {
     test('of should create a Right', () {
       Either<int, String> either = of<int, String>('Hello');
-      expect(isRight(either), true);
+      expect(either, isA<Right<int, String>>());
       if (either is Right<int, String>) {
         expect(either.value, 'Hello');
-      } else {
-        fail("The instance is not a Right");
       }
     });
+
     test('Right should hold the value', () {
       var rightEither = right<int, String>('Hello');
       if (rightEither is Right<int, String>) {
@@ -31,27 +30,6 @@ void main() {
       } else {
         fail("The instance is not a Left");
       }
-    });
-  });
-  group('Either refinement -', () {
-    test('isLeft should return true for Left', () {
-      var leftEither = left<int, String>(42);
-      expect(isLeft(leftEither), true);
-    });
-
-    test('isLeft should return false for Right', () {
-      var rightEither = right<int, String>('Hello');
-      expect(isLeft(rightEither), false);
-    });
-
-    test('isRight should return true for Right', () {
-      var rightEither = right<int, String>('Hello');
-      expect(isRight(rightEither), true);
-    });
-
-    test('isRight should return false for Left', () {
-      var leftEither = left<int, String>(42);
-      expect(isRight(leftEither), false);
     });
   });
   group('fromPredicate', () {

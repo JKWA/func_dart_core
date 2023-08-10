@@ -77,52 +77,6 @@ Option<B> of<B>(B value) {
   return Some<B>(value);
 }
 
-/// A type refinement function to check if an [option] is of type `None`.
-///
-/// Example:
-/// ```dart
-/// Option<String> someOption = Some("Hello");
-/// Option<int> noneOption = const None();
-///
-/// if (isNone(someOption)) {
-///   print("This will not be executed because 'someOption' is not None.");
-/// } else {
-///   print("This will be executed because 'someOption' is not None.");
-/// }
-///
-/// if (isNone(noneOption)) {
-///   print("This will be executed because 'noneOption' is None.");
-/// } else {
-///   print("This will not be executed because 'noneOption' is None.");
-/// }
-/// ```
-bool isNone<A>(Option<A> option) {
-  return option is None<A>;
-}
-
-/// A refinement function to check if an [option] is of type `Some`.
-///
-/// Example:
-/// ```dart
-/// Option<String> someOption = Some("Hello");
-/// Option<int> noneOption = const None();
-///
-/// if (isSome(someOption)) {
-///   print("This will be executed because 'someOption' is Some.");
-/// } else {
-///   print("This will not be executed because 'someOption' is Some.");
-/// }
-///
-/// if (isSome(noneOption)) {
-///   print("This will not be executed because 'noneOption' is not Some.");
-/// } else {
-///   print("This will be executed because 'noneOption' is not Some.");
-/// }
-/// ```
-bool isSome<A>(Option<A> option) {
-  return option is Some<A>;
-}
-
 /// Returns an [Option] based on the evaluation of a [Predicate] on a value.
 ///
 /// This function takes in a predicate (a function that returns a boolean) and
