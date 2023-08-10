@@ -89,12 +89,12 @@ Predicate<B> Function(Predicate<A>) contramap<B, A>(A Function(B) f) {
 /// print(evenOrOdd(1));  // Prints: 'Odd'
 /// ```
 B Function(A) Function(Predicate<A>) match<A, B>(
-  B Function() onTrue,
-  B Function() onFalse,
+  B Function(A value) onFalse,
+  B Function(A value) onTrue,
 ) {
   return (Predicate<A> predicate) {
     return (A value) {
-      return predicate(value) ? onTrue() : onFalse();
+      return predicate(value) ? onTrue(value) : onFalse(value);
     };
   };
 }

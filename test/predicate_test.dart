@@ -36,7 +36,8 @@ void main() {
       expect(isStringLengthEven('odd'), false);
     });
 
-    final matcher = match<int, bool>(() => true, () => false)(isEven);
+    final Function matcher =
+        match<int, bool>((_) => false, (_) => true)(isEven);
 
     test('match logic', () {
       expect(matcher(2), true);

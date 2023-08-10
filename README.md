@@ -40,6 +40,26 @@ One distinctive feature of Functional Dart is its intentional avoidance of Dart'
 
 By promoting strong typing, Functional Dart ensures that developers are less likely to run into unforeseen runtime issues, making applications more maintainable and robust. This approach, combined with the principles of functional programming, provides a structured and reliable framework for developing complex applications in Dart.
 
+## Match Order in Functional Constructs
+
+Navigating this codebase reveals specific conventions in pattern matching, chosen for clarity and predictability:
+
+- **Either**:
+
+  1. Within this library, the `Either` construct represents a computation that might fail. Consistently, the "left" side symbolizes an error or failure scenario, while the "right" side indicates success.
+  2. When pattern matching with `Either`, the "left" (error) case is checked first. This approach ensures that error handling is explicitly addressed at the outset, enhancing the flow's readability.
+
+- **Option**:
+
+  1. The `Option` implementation can be visualized as a container that either holds a value (`Some`) or doesn't (`None`).
+  2. In pattern matching routines, the `None` case is evaluated first, emphasizing the importance of addressing scenarios where values might be absent.
+
+- **Predicate**:
+  1. While `Either` and `Option` adhere to strict conventions, the approach with predicates offers more flexibility.
+  2. Nevertheless, a consistent evaluation order is maintained throughout the library for clarity.
+
+By following these conventions, this library offers a coherent and intuitive experience, allowing developers to focus on their logic and functionality rather than on the intricacies of structure.
+
 ## Usage
 
 See `/example` folder.

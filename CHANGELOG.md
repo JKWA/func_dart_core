@@ -32,3 +32,6 @@
 - Add sequenceList and traverseList to Either
 - Add sequenceList and traverseList to TaskEither
 - Update ImmutableList and Option equality logic
+- Invert match order for Predicate
+- Add basic validation example
+- Update README
