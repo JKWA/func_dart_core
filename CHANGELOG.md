@@ -35,4 +35,5 @@
 - Invert match order for Predicate
 - Add validation examples
 - Remove refinements
+- Update match to use Dart's exhaustive matching
 - Update README

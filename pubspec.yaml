@@ -1,5 +1,5 @@
 name: func_dart_core
-description: A functional programming library for Dart
+description: Functional Dart provides tools for writing functional code in Dart, emphasizing immutability, function composition, type safety, and avoiding the `dynamic` type.
 version: 0.5.0
 repository: https://github.com/JKWA/func_dart_core
 homepage: https://jkwa.github.io/func_dart_core/index.html
