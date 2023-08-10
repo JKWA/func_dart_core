@@ -242,18 +242,15 @@ TapFunction<A> tap<A>(void Function(A) f) {
 /// Provides a side effect function [Function] that is applied to the value
 final chainFirst = tap;
 
-/// A function to process an `Option` value. If [Option] is an instance of `Some`,
-/// the function [onSome] will be invoked with the encapsulated value.
-/// If [Option] is `None`, then [onNone] will be called.
+//// A function to process an `Option` value using Dart's pattern matching.
+/// If [Option] is an instance of `Some`, the function [onSome] will be invoked
+/// with the encapsulated value. If [Option] is `None`, then [onNone] will be called.
 ///
-/// In Dart, you can't use a switch statement to check if a value is an instance
-/// of a generic class.
+/// The updated Dart version supports pattern matching for generic classes,
+/// allowing for expressive and concise handling of `Option` types without the need
+/// for manual type checks.
 ///
-/// Generic classes in Dart are a compile-time concept that get "erased" at runtime,
-/// they aren't preserved in a way that would allow them to be checked using a
-/// switch statement or similar construct. This is known as type erasure.
-///
-/// This is a form of pattern matching adapted for Dart.
+/// This function provides a clean and structured way to handle both variants of `Option`.
 /// The returned function takes an `Option<A>` and returns a value of type `B`.
 ///
 /// Example usage:
@@ -265,12 +262,10 @@ final chainFirst = tap;
 /// print(matchFn(option2));  // Prints: It's None
 /// ```
 B Function(Option<A>) match<A, B>(B Function() onNone, B Function(A) onSome) {
-  return (Option<A> option) {
-    if (option is Some<A>) {
-      return onSome(option.value);
-    }
-    return onNone();
-  };
+  return (Option<A> option) => switch (option) {
+        Some(value: var val) => onSome(val),
+        None() => onNone()
+      };
 }
 
 /// Alias for [match].

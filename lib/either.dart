@@ -218,9 +218,12 @@ TapFunction<A, B> tap<A, B>(void Function(B) f) {
 /// Provides a side effect function [Function] that is applied to the value
 final chainFirst = tap;
 
-/// Matches an [Either<A, B>] to execute a function based on Left or Right value.
-/// The [match] function is often used to handle Either values in a way that is
-/// expressive and easy to understand.
+/// Matches an [Either<A, B>] to execute a function based on its Left or Right value.
+/// Using Dart's pattern matching, the [match] function provides an expressive
+/// and concise way to handle `Either` values without manual type checks.
+///
+/// The returned function uses pattern matching on [Either<A, B>] and invokes
+/// the relevant function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
 ///
 /// Example:
 ///
@@ -228,22 +231,20 @@ final chainFirst = tap;
 /// void main() {
 ///   final right = Right(5);
 ///   final left = Left("Error");
-///   final matchFn = match(() => "It's Left", (value) => "It's Right with value: $value");
+///   final matchFn = match(
+///     (error) => "It's Left with value: $error",
+///     (value) => "It's Right with value: $value"
+///   );
 ///   print(matchFn(right));  // Prints: It's Right with value: 5
-///   print(matchFn(left));  // Prints: It's Left
+///   print(matchFn(left));  // Prints: It's Left with value: Error
 /// }
 /// ```
 C Function(Either<A, B>) match<A, B, C>(
     C Function(A) onLeft, C Function(B) onRight) {
-  return (Either<A, B> either) {
-    if (either is Left<A, B>) {
-      return onLeft(either.value);
-    } else if (either is Right<A, B>) {
-      return onRight(either.value);
-    }
-    // With a sealed class this cannot be reached
-    throw Exception("Either must be Left or Right");
-  };
+  return (Either<A, B> either) => switch (either) {
+        Left(value: var leftValue) => onLeft(leftValue),
+        Right(value: var rightValue) => onRight(rightValue)
+      };
 }
 
 /// Alias for [match].

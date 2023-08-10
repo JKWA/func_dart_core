@@ -212,27 +212,32 @@ TaskEither<A, B> fromOption<A, B>(o.Option<B> option, A Function() leftValue) {
   });
 }
 
-/// Allows handling both `Left` and `Right` values of the `TaskEither` and returns a new value.
+/// Matches a [TaskEither<A, B>] to execute a function based on its `Left` or `Right` value asynchronously.
+/// Using Dart's pattern matching, the [match] function provides an expressive and concise way to handle
+/// `TaskEither` values without manual type checks and returns a [Future<C>] representing the computed value.
+///
+/// The returned function uses pattern matching on the result of [TaskEither<A, B>] and invokes
+/// the relevant asynchronous function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
 ///
 /// Example:
-/// ```
+/// ```dart
 /// final myTask = of<String, int>(10);
-/// final result = await match<String, int, String>(
+/// final matchFn = match<String, int, String>(
 ///     (left) => Future.value("Error: $left"),
 ///     (right) => Future.value("Value: $right")
-/// )(myTask); // Value: 10
+/// );
+/// final result = await matchFn(myTask);
+/// print(result); // Prints: Value: 10
 /// ```
 Future<C> Function(TaskEither<A, B>) match<A, B, C>(
     Future<C> Function(A) onLeft, Future<C> Function(B) onRight) {
   return (TaskEither<A, B> taskEither) async {
     final either = await taskEither.taskEither();
 
-    if (either is Left<A, B>) {
-      return await onLeft(either.value);
-    } else if (either is Right<A, B>) {
-      return await onRight(either.value);
-    }
-    throw Exception("TaskEither must be Left or Right");
+    return switch (either) {
+      Left(value: var leftValue) => await onLeft(leftValue),
+      Right(value: var rightValue) => await onRight(rightValue)
+    };
   };
 }
 

@@ -101,9 +101,13 @@ While the `isLeft` getter informs you if the `Either` is of the `Left` variant, 
 
 This design has the potential to introduce bugs and unexpected crashes, especially if proper precautions are not taken before accessing `leftValue`. While the exception message is clear, relying on runtime exceptions for flow control is generally discouraged as it goes against the principle of writing predictable and fail-safe code.
 
-### The Recommended Alternative
+### The Recommended Alternatives
 
-In lieu of these helper functions, it's more idiomatic and safer in Dart to use direct type checks. For example:
+In lieu of these helper functions, it's more idiomatic and safer in Dart to use direct type checks or mapping functions.
+
+#### Direct Type Checks
+
+For `Either`:
 
 ```dart
 if (myEither is Left<ErrorType, SuccessType>) {
@@ -125,15 +129,35 @@ if (myOption is Some<ValueType>) {
 }
 ```
 
-This approach is more explicit and leans on Dart's built-in type checking to ensure safety.
+#### Using Map Functions
+
+For types like `Either` and `Option`, the use of `match` or `fold` can be a powerful alternative:
+
+For `Either`:
+
+```dart
+myEither.match(
+  (left) => /* Handle Left variant */,
+  (right) => /* Handle Right variant */
+);
+```
+
+And for `Option`:
+
+```dart
+myOption.match(
+  (some) => /* Handle Some variant */,
+  () => /* Handle None case */
+);
+```
+
+These `map` functions allow you to provide handlers for each variant in a clean and functional manner. This approach reduces the need for explicit type checks and ensures that you handle all possible variants.
 
 ### Conclusion
 
-While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code.
+While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code. By utilizing direct type checks or the power of `map` functions, developers can write clearer and more predictable code.
 
 ---
-
-Feel free to tweak this to fit the style and tone of your README or library documentation.
 
 ## Usage
 
