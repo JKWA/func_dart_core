@@ -60,7 +60,7 @@ Navigating this codebase reveals specific conventions in pattern matching, chose
 
 By following these conventions, this library offers a coherent and intuitive experience, allowing developers to focus on their logic and functionality rather than on the intricacies of structure.
 
-## Understanding the Absence of refinements such as `isRight`, `isLeft`, `isNone`, and `isSome`
+## The Absence of function refinements such as `isRight`, `isLeft`, `isNone`, and `isSome`
 
 Many functional programming libraries provide, refinement functions such as `isRight`, `isLeft`, `isNone`, and `isSome`. However, in this library these refinement functions are conspicuously absent. Here's why.
 
@@ -68,7 +68,7 @@ Many functional programming libraries provide, refinement functions such as `isR
 
 Dart, unlike some languages that have more advanced type refinement capabilities (e.g., TypeScript or Haskell), doesn't refine types within conditional blocks based on predicates.
 
-For example, consider the tempting pattern:
+For example, consider this pattern:
 
 ```dart
 if (isLeft(myEither)) {
@@ -82,7 +82,7 @@ Even if `isLeft` returns true, Dart's type system won't refine the type of `myEi
 
 ### Safety Concerns with isLeft via `extension`
 
-This extension would provide a convenient way to work with `Either` types. However, this is not type safe. Here's why:
+An extension would provide a convenient way to work with `Either` types. However, this is not type safe. Here's why:
 
 ```dart
 extension EitherExtensions<A, B> on Either<A, B> {
@@ -129,7 +129,7 @@ This approach is more explicit and leans on Dart's built-in type checking to ens
 
 ### Conclusion
 
-While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code. We advise users of this library to directly handle variants, thereby making full use of Dart's type system for safer code.
+While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code.
 
 ---
 
