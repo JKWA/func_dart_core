@@ -244,8 +244,6 @@ While it may initially seem like a missing feature, the decision to exclude `isR
 
 ## Usage
 
-See `/example` folder.
-
-While Dart offers a robust type system, its lack of built-in support for algebraic data types can be a challenge
+See [`/example`](./example/README.md) folder.
 
 ---

@@ -6,7 +6,7 @@ Welcome to the examples section of the **Functional Dart Core** library. This re
 
 ### Validation with FP Constructs
 
-In validation section:
+[In validation section](./validation/README.md),
 
 1. **Basic Validation Using `Either` and Predicates**: Learn how `Either` provides clear success/error distinction and how predicates define validation criteria.
 2. **Composing Multiple Validations**: Understand how to chain validation functions for modularity and comprehensive validation.
