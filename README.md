@@ -244,6 +244,6 @@ While it may initially seem like a missing feature, the decision to exclude `isR
 
 ## Usage
 
-See [`/example`](./example/README.md) folder.
+See [`/example`](https://github.com/JKWA/func_dart_core/tree/main/example) folder.
 
 ---
