@@ -40,6 +40,89 @@ One distinctive feature of Functional Dart is its intentional avoidance of Dart'
 
 By promoting strong typing, Functional Dart ensures that developers are less likely to run into unforeseen runtime issues, making applications more maintainable and robust. This approach, combined with the principles of functional programming, provides a structured and reliable framework for developing complex applications in Dart.
 
+## Sum Types in Dart: Emulating Algebraic Data Types
+
+Algebraic Data Types (ADTs) are a key feature in many functional programming languages, allowing for the definition of composite types in terms of other types. Sum types, a subset of ADTs, let developers express that a value can be one of several possible variants. This feature is invaluable for ensuring type safety, modeling domain-specific problems, and reducing runtime errors.
+
+However, Dart, unlike some of its counterparts, doesn't natively support ADTs. This necessitates workarounds when developers want to leverage the power of sum types.
+
+### Representation in Other Languages:
+
+##### Haskell (`Maybe` type):
+
+```haskell
+data Maybe a = Just a | Nothing
+```
+
+##### TypeScript:
+
+```typescript
+type Option<A> = None | Some<A>;
+```
+
+##### Rust (`Option` type):
+
+```rust
+enum Option<T> {
+    Some(T),
+    None,
+}
+```
+
+### Option Type in Dart:
+
+```dart
+sealed class Option<A> {
+  const Option();
+}
+
+class Some<A> extends Option<A> {
+  final A value;
+  Some(this.value);
+}
+
+class None<A> extends Option<A> {
+  const None();
+}
+```
+
+##### Why does `None` have a Generic Type?
+
+1. **Ensures Uniformity**: Allows interchangeability between `Some<T>` and `None<T>`.
+2. **Maintains Type Safety**: Avoids pitfalls of `dynamic`.
+3. **Utilizes Type Inference**: Dart's type inference works efficiently.
+4. **Keeps Functional Method Consistency**: Ensures methods on `Option` have consistent behavior.
+
+### Either Type in Dart and Other Languages
+
+Either type represents values that can be of two different types:
+
+```pseudo
+type Either<E, A> = Left<E> | Right<A>
+```
+
+In Dart, due to lack of union types:
+
+```dart
+abstract class Either<E, A> { ... }
+
+class Left<E, A> extends Either<E, A> {
+  final E value;
+  ...
+}
+
+class Right<E, A> extends Either<E, A> {
+  final A value;
+  ...
+}
+```
+
+## Conclusion
+
+The `func_dart_core` library offers an intuitive and safe emulation of the common sum types in functional programming.
+
+---
+
 ## Match Order in Functional Constructs
 
 Navigating this codebase reveals specific conventions in pattern matching, chosen for clarity and predictability:
@@ -136,22 +219,22 @@ For types like `Either` and `Option`, the use of `match` or `fold` can be a powe
 For `Either`:
 
 ```dart
-myEither.match(
-  (left) => /* Handle Left variant */,
-  (right) => /* Handle Right variant */
+match(
+  (left) => /* Handle Left */,
+  (right) => /* Handle Right*/
 );
 ```
 
 And for `Option`:
 
 ```dart
-myOption.match(
-  (some) => /* Handle Some variant */,
-  () => /* Handle None case */
+match(
+  (val) => /* Handle Some */,
+  () => /* Handle None */
 );
 ```
 
-These `map` functions allow you to provide handlers for each variant in a clean and functional manner. This approach reduces the need for explicit type checks and ensures that you handle all possible variants.
+These `match` functions allow you to provide handlers for each variant in a clean and functional manner. This approach reduces the need for explicit type checks and ensures that you handle all possible variants.
 
 ### Conclusion
 
@@ -162,3 +245,7 @@ While it may initially seem like a missing feature, the decision to exclude `isR
 ## Usage
 
 See `/example` folder.
+
+While Dart offers a robust type system, its lack of built-in support for algebraic data types can be a challenge
+
+---
