@@ -37,3 +37,7 @@
 - Remove refinements
 - Update match to use Dart's exhaustive matching
 - Update README
+
+## 0.5.1
+
+- Add and update README files
