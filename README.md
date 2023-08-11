@@ -20,6 +20,56 @@ Functional Dart currently includes a number of powerful, flexible structures and
 - Predicates and functions for manipulating and combining them.
 - Additional utility functions and classes to aid functional programming.
 
+Thank you for the clarification. With that in mind, let's revise the README to reflect the functional programming constructs and the deliberate naming choices:
+
+---
+
+### Modules vs. Classes: Advantages of Using Modules
+
+- **Grouping**: Modules provide a clear structure, naturally grouping related functions and types.
+- **Readability**: Without class constraints, modules offer a direct and simplified reading experience with top-level entities.
+
+- **Functionality Consistency**: For FP constructs like Monads, using consistent names (e.g., `map`, `flatMap`, `ap`) across modules fosters familiarity.
+
+- **No Forced Containment**: Avoid wrapping related methods within classes. Modules sidestep this limitation.
+
+- **Alias-Driven Imports**: Import entire modules in Dart with one statement and use aliases to manage function name collisions.
+
+- **State Management**: Modules excel with stateless, pure functions, promoting transparency and fewer side effects.
+
+- **Extendability**: Expand on modules without unintended overrides or shadows.
+
+#### Using Classes for Types
+
+Our library leverages classes for intricate data constructs, such as the `Option` type:
+
+- **Explicit Variants**: Classes distinctly differentiate between variants like `Some` and `None`.
+
+- **Type Safety**: They introduce strong type-checking capabilities.
+
+- **Behavioral Encapsulation**: Each variant can have individualized methods or properties.
+
+#### Consistent Naming and Handling Collisions with Module Imports
+
+In the world of Functional Programming (FP), certain constructs like Monads often share common functionality. To simplify the experience and provide a consistent interface, our library uses standardized function names across different modules, such as `map`, `ap`, and `flatMap`.
+
+While this naming convention aids in a more intuitive experience for those well-acquainted with FP, it also means that when you work with multiple constructs, function names will overlap. To address this, leverage Dart's aliasing capability.
+
+Consider you're using both the `Option` and `Either` constructs:
+
+```dart
+import 'package:func_dart_core/option.dart' as option;
+import 'package:func_dart_core/either.dart' as either;
+
+// Use functions from Option module with the alias
+option.map(someValue, someFunction);
+
+// Use functions from Either module with its respective alias
+either.map(anotherValue, anotherFunction);
+```
+
+By prefixing functions with their respective module aliases, you ensure clarity and prevent naming conflicts. This approach not only maintains the benefits of consistent naming but also grants the flexibility to operate in multi-monad scenarios without confusion.
+
 ## Higher Kinded Types (HKT)
 
 In Dart, the lack of native support for higher-kinded types makes the creation of type-safe functional programming constructs like Functors, Applicatives, or Monads challenging. For instance, without performing a downcast, it's not possible to ensure that the ap function returns an Applicative<B Function(A)>.
