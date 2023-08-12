@@ -46,3 +46,8 @@
 
 - Refactor to use exhaustive matching
 - Update links for example README
+
+## 0.5.3
+
+- Update README
+- Add CONTRIBUTING.md

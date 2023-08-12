@@ -2,6 +2,25 @@
 
 Functional Dart is a Dart library that encourages functional programming principles. Inspired by [fp-ts](https://gcanti.github.io/fp-ts/) library in TypeScript, Functional Dart aims to bring a comprehensive set of functional programming (FP) tools to Dart developers.
 
+**Table of Contents:**
+
+1. [What is Functional Programming?](#what-is-functional-programming)
+2. [Why Functional Dart?](#why-functional-dart)
+   - [Modules vs. Classes: Advantages of Using Modules](#modules-vs-classes-advantages-of-using-modules)
+   - [Using Classes for Types](#using-classes-for-types)
+   - [Consistent Naming and Handling Collisions with Module Imports](#consistent-naming-and-handling-collisions-with-module-imports)
+3. [Higher Kinded Types (HKT)](#higher-kinded-types-hkt)
+4. [The Avoidance of `dynamic`](#the-avoidance-of-dynamic)
+5. [Sum Types in Dart: Emulating Algebraic Data Types](#sum-types-in-dart-emulating-algebraic-data-types)
+   - [Representation in Other Languages](#representation-in-other-languages)
+   - [Option Type in Dart](#option-type-in-dart)
+   - [Either Type in Dart and Other Languages](#either-type-in-dart-and-other-languages)
+6. [Match Order in Functional Constructs](#match-order-in-functional-constructs)
+7. [The Absence of function refinements such as `isRight`, `isLeft`, `isNone`, and `isSome`](#the-absence-of-function-refinements-such-as-isright-isleft-isnone-and-issome)
+   - [Dart's Type System Limitations](#darts-type-system-limitations)
+   - [Safety Concerns with isLeft via `extension`](#safety-concerns-with-isleft-via-extension)
+   - [Recommended Alternatives](#recommended-alternatives)
+
 ## What is Functional Programming?
 
 Functional programming is a programming paradigm that treats computation as the evaluation of mathematical functions and avoids changing state and mutable data. It emphasizes the application of functions, in contrast to the procedural programming style, which emphasizes changes in state.
@@ -163,7 +182,7 @@ class Right<E, A> extends Either<E, A> {
 }
 ```
 
-## Conclusion
+### Conclusion
 
 The `func_dart_core` library offers an intuitive and safe emulation of the common sum types in functional programming.
 
@@ -230,11 +249,13 @@ While the `isLeft` getter informs you if the `Either` is of the `Left` variant, 
 
 This design has the potential to introduce bugs and unexpected crashes, especially if proper precautions are not taken before accessing `leftValue`. While the exception message is clear, relying on runtime exceptions for flow control is generally discouraged as it goes against the principle of writing predictable and fail-safe code.
 
-### The Recommended Alternatives
+### Recommended Alternatives
 
-In lieu of these helper functions, it's more idiomatic and safer in Dart to use direct type checks or mapping functions.
+Handling variants in data structures such as `Either` and `Option` can be approached in various ways, each with its own advantages.
 
-#### Direct Type Checks
+#### 1. Direct Type Checks (Imperative Approach)
+
+The basic way of handling variants is through direct type checks.
 
 For `Either`:
 
@@ -245,6 +266,8 @@ if (myEither is Left<ErrorType, SuccessType>) {
 } else if (myEither is Right<ErrorType, SuccessType>) {
   // Handle Right variant
   var right = myEither.value;
+} else {
+  throw AssertionError('Unreachable code');
 }
 ```
 
@@ -255,17 +278,49 @@ if (myOption is Some<ValueType>) {
   var value = myOption.value;
 } else if (myOption is None<ValueType>) {
   // Handle None case
+} else {
+  throw AssertionError('Unreachable code');
 }
 ```
 
-#### Using Map Functions
+#### 2. Exhaustive Switch Statements (Structured Imperative Approach)
 
-For types like `Either` and `Option`, the use of `match` or `fold` can be a powerful alternative:
+With Dart's exhaustive `switch`, you ensure that all variants are handled in a more structured manner.
 
 For `Either`:
 
 ```dart
-match(
+switch (myEither) {
+  case Left(value: var leftValue):
+    // Handle Left variant
+    break;
+  case Right(value: var rightValue):
+    // Handle Right variant
+    break;
+}
+```
+
+And for `Option`:
+
+```dart
+switch (myOption) {
+  case Some(value: var optionValue):
+    // Handle Some variant
+    break;
+  case None():
+    // Handle None variant
+    break;
+}
+```
+
+#### 3. Match Functions (Declarative, Functional Approach)
+
+For a functional and declarative approach, use the `match` function. This approach abstracts away the mechanics of type checking, leading to more readable and composable code.
+
+For `Either`:
+
+```dart
+eitherModule.match(
   (left) => /* Handle Left */,
   (right) => /* Handle Right*/
 );
@@ -274,22 +329,40 @@ match(
 And for `Option`:
 
 ```dart
-match(
+optionModule.match(
   (val) => /* Handle Some */,
   () => /* Handle None */
 );
 ```
 
-These `match` functions allow you to provide handlers for each variant in a clean and functional manner. This approach reduces the need for explicit type checks and ensures that you handle all possible variants.
-
-### Conclusion
-
-While it may initially seem like a missing feature, the decision to exclude `isRight`, `isLeft`, `isNone`, and `isSome` was deliberate to encourage safer and more idiomatic Dart code. By utilizing direct type checks or the power of `map` functions, developers can write clearer and more predictable code.
-
----
+**Why use the functional approach?**  
+Functional methods like `match` are designed for clarity and composability. They make your intentions explicit and ensure that all possible cases are handled. This reduces boilerplate, makes your code less error-prone, and enhances readability. For those familiar with functional programming or aiming to leverage the power of functional paradigms in Dart, the `match` function is a familiar and powerful tool.
 
 ## Usage
 
 See [`/example`](https://github.com/JKWA/func_dart_core/tree/main/example) folder.
 
----
+## Installation
+
+To add Functional Dart to your project, include the following in your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  func_dart_core: latest_version
+```
+
+## Documentation
+
+Detailed documentation is available [here](https://jkwa.github.io/func_dart_core/index.html).
+
+## License
+
+Functional Dart is licensed under the [MIT License](https://github.com/JKWA/func_dart_core/blob/main/LICENSE).
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](https://github.com/JKWA/func_dart_core/blob/main/CONTRIBUTING.md) for details on how to contribute, set up the development environment, and propose bugfixes or improvements.
+
+## Acknowledgments
+
+- Inspired by [fp-ts](https://gcanti.github.io/fp-ts/) for TypeScript.
