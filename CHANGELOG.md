@@ -45,4 +45,4 @@
 ## 0.5.2
 
 - Refactor to use exhaustive matching
--
+- Update links for example README

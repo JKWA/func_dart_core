@@ -20,10 +20,6 @@ Functional Dart currently includes a number of powerful, flexible structures and
 - Predicates and functions for manipulating and combining them.
 - Additional utility functions and classes to aid functional programming.
 
-Thank you for the clarification. With that in mind, let's revise the README to reflect the functional programming constructs and the deliberate naming choices:
-
----
-
 ### Modules vs. Classes: Advantages of Using Modules
 
 - **Grouping**: Modules provide a clear structure, naturally grouping related functions and types.

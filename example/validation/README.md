@@ -24,7 +24,7 @@ With this foundation, let's dive into the lessons to understand the mechanics of
 
 ## **Lesson 1: Basic Validation Using `Either` and Predicates**
 
-[In this lesson](./validation_1.dart), the foundational idea is using the `Either` type to handle validation results. `Either` can return a success (`Right`) or an error (`Left`), making it a versatile tool for capturing validation outcomes.
+[In this lesson](https://github.com/JKWA/func_dart_core/tree/main/example/validation/validation_1.dart), the foundational idea is using the `Either` type to handle validation results. `Either` can return a success (`Right`) or an error (`Left`), making it a versatile tool for capturing validation outcomes.
 
 ### Concepts:
 
@@ -45,7 +45,7 @@ bool isZero(int value) => value == 0;
 
 ## **Lesson 2: Advanced Predicate Handling and Validator Creation**
 
-Building upon basic predicates, [this lesson](./validation_2.dart) introduces higher-order predicates and validator creation, allowing more complex validation rules.
+Building upon basic predicates, [this lesson](https://github.com/JKWA/func_dart_core/tree/main/example/validation/validation_2.dart) introduces higher-order predicates and validator creation, allowing more complex validation rules.
 
 ### Concepts:
 
@@ -65,7 +65,7 @@ Validator<T> Function(String) validate<T>(p.Predicate<T> predicate) {...}
 
 ## **Lesson 3: Error Accumulation with `NonEmptyList` and Sequential Validation**
 
-[This lesson](./validation_3.dart) teaches how to accumulate multiple errors instead of halting on the first one, giving a comprehensive understanding of all the issues with the input data.
+[This lesson](https://github.com/JKWA/func_dart_core/tree/main/example/validation/validation_3.dart) teaches how to accumulate multiple errors instead of halting on the first one, giving a comprehensive understanding of all the issues with the input data.
 
 ### Concepts:
 
@@ -81,7 +81,7 @@ Validator<T> applySequentially<T>(List<Validator<T>> validators) {...}
 
 ## **Lesson 4: Validating Complex Data Using Lenses and Composite Validators**
 
-For detailed data structures like `UserData`, [this lesson](./validation_4.dart) demonstrates using lenses to focus on specific parts and composite validators to ensure full validation.
+For detailed data structures like `UserData`, [this lesson](https://github.com/JKWA/func_dart_core/tree/main/example/validation/validation_4.dart) demonstrates using lenses to focus on specific parts and composite validators to ensure full validation.
 
 ### Concepts:
 
