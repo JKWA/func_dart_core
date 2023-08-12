@@ -335,4 +335,21 @@ void main() {
           il.ImmutableList<String>([]));
     });
   });
+  group('swap', () {
+    test('should swap Left to Right', () {
+      final input = Left<String, int>('error');
+      final result = swap(input);
+
+      expect(result, isA<Right<int, String>>());
+      expect((result as Right).value, equals('error'));
+    });
+
+    test('should swap Right to Left', () {
+      final input = Right<String, int>(42);
+      final result = swap(input);
+
+      expect(result, isA<Left<int, String>>());
+      expect((result as Left).value, equals(42));
+    });
+  });
 }

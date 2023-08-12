@@ -76,12 +76,12 @@ TaskEither<A, B> map<A, C, B>(TaskEither<A, C> taskEither, B Function(C) f) {
   return TaskEither<A, B>(() async {
     final result = await taskEither.taskEither();
 
-    if (result is Left<A, C>) {
-      return Left<A, B>(result.value);
-    } else if (result is Right<A, C>) {
-      return Right<A, B>(f(result.value));
+    switch (result) {
+      case Left(value: var leftValue):
+        return Left<A, B>(leftValue);
+      case Right(value: var rightValue):
+        return Right<A, B>(f(rightValue));
     }
-    throw AssertionError("Unreachable code");
   });
 }
 
@@ -97,12 +97,12 @@ TaskEither<A, B> flatMap<A, C, B>(
   return TaskEither<A, B>(() async {
     final result = await taskEither.taskEither();
 
-    if (result is Left<A, C>) {
-      return Left<A, B>(result.value);
-    } else if (result is Right<A, C>) {
-      return await f(result.value).taskEither();
+    switch (result) {
+      case Left(value: var leftValue):
+        return Left<A, B>(leftValue);
+      case Right(value: var rightValue):
+        return await f(rightValue).taskEither();
     }
-    throw AssertionError("Unreachable code");
   });
 }
 
@@ -203,12 +203,12 @@ TaskEither<A, B> Function(B value) fromPredicateTaskEither<A, B>(
 /// ```
 TaskEither<A, B> fromOption<A, B>(o.Option<B> option, A Function() leftValue) {
   return TaskEither<A, B>(() async {
-    if (option is o.Some<B>) {
-      return Right<A, B>(option.value);
-    } else if (option is o.None<B>) {
-      return Left<A, B>(leftValue());
+    switch (option) {
+      case o.Some(value: var someValue):
+        return Right<A, B>(someValue);
+      case o.None():
+        return Left<A, B>(leftValue());
     }
-    throw AssertionError("Unreachable code");
   });
 }
 
@@ -255,12 +255,12 @@ Future<B> getOrElse<A, B>(
     TaskEither<A, B> taskEither, B Function(A) defaultValue) async {
   final result = await taskEither.taskEither();
 
-  if (result is Left<A, B>) {
-    return defaultValue(result.value);
-  } else if (result is Right<A, B>) {
-    return result.value;
+  switch (result) {
+    case Left(value: var leftValue):
+      return defaultValue(leftValue);
+    case Right(value: var rightValue):
+      return rightValue;
   }
-  throw Exception("TaskEither must be Left or Right");
 }
 
 /// Sequences a list of `TaskEither` into a single `TaskEither` that produces a list of results.
@@ -309,10 +309,12 @@ Future<Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
 
   for (var taskEither in list) {
     Either<A, B> result = await taskEither.taskEither();
-    if (result is Left<A, B>) {
-      return Left(result.value);
+    switch (result) {
+      case Left(value: var leftValue):
+        return Left<A, il.ImmutableList<B>>(leftValue);
+      case Right(value: var rightValue):
+        results.add(rightValue);
     }
-    results.add((result as Right<A, B>).value);
   }
 
   return Right(il.of(results));
@@ -370,12 +372,13 @@ Future<Either<E, il.ImmutableList<B>>> traverseList<E, A, B>(
 
   for (final item in list) {
     final result = await f(item).taskEither();
-
-    if (result is Left<E, B>) {
-      return Left<E, il.ImmutableList<B>>(result.value);
+    switch (result) {
+      case Left(value: var leftValue):
+        return Left<E, il.ImmutableList<B>>(leftValue);
+      case Right(value: var rightValue):
+        results.add(rightValue);
     }
-    results.add((result as Right<E, B>).value);
   }
 
-  return Right<E, il.ImmutableList<B>>(il.ImmutableList<B>(results));
+  return Right<E, il.ImmutableList<B>>(il.of(results));
 }

@@ -58,15 +58,16 @@ Either<A, B> left<A, B>(A value) {
   return Left<A, B>(value);
 }
 
-/// Wraps the given [value] in a `Right`, indicating the presence of a value of type `B`.
+/// An alias for `of`, used to wrap the given value in a `Right`.
+///
+/// Because `Either` has a bias towards `Right` as its successful representation,
+/// the `right` function serves as an idiomatic alias for `of`.
 ///
 /// Example usage:
 /// ```dart
-/// final either = right<int, String>('Hello');  // This will be Right('Hello')
+/// final either = right<int, String>('Hello');  // This will produce a Right('Hello')
 /// ```
-Either<A, B> right<A, B>(B value) {
-  return Right<A, B>(value);
-}
+final right = of;
 
 /// Wraps the given [value] in a `Right`, indicating the presence of a value of type `B`.
 ///
@@ -76,14 +77,41 @@ Either<A, B> right<A, B>(B value) {
 /// ```
 /// @category lift
 Either<A, B> of<A, B>(B value) {
-  return right<A, B>(value);
+  return Right<A, B>(value);
 }
 
+// C Function(Either<A, B>) match<A, B, C>(
+//     C Function(A) onLeft, C Function(B) onRight) {
+//   return (Either<A, B> either) => switch (either) {
+//         Left(value: var leftValue) => onLeft(leftValue),
+//         Right(value: var rightValue) => onRight(rightValue)
+//       };
+// }
+
+/// Swaps the inner types of an `Either` value.
+///
+/// If the provided `Either` is a `Left`, the resulting value will be a `Right`
+/// with the same inner value, and vice versa.
+///
+/// Example:
+/// ```dart
+/// final leftValue = Left<String, int>('error');
+/// final swappedToLeft = swap(leftValue);
+/// print(swappedToLeft);  // Outputs: Right('error')
+///
+/// final rightValue = Right<String, int>(42);
+/// final swappedToRight = swap(rightValue);
+/// print(swappedToRight);  // Outputs: Left(42)
+/// ```
+///
+/// [either]: The `Either` value to be swapped.
+/// Returns: A new `Either` value with swapped inner types.
 Either<B, A> swap<A, B>(Either<A, B> either) {
-  if (either is Right<A, B>) {
-    return Left<B, A>(either.value);
-  } else {
-    return Right<B, A>((either as Left<A, B>).value);
+  switch (either) {
+    case Left(value: var leftValue):
+      return Right<B, A>(leftValue);
+    case Right(value: var rightValue):
+      return Left<B, A>(rightValue);
   }
 }
 
@@ -138,10 +166,11 @@ Either<A, B> Function(Option<B> option) fromOption<A, B>(
 /// print(result);  // This will print Right(5)
 /// ```
 Either<A, C> map<A, B, C>(Either<A, B> either, C Function(B) f) {
-  if (either is Right<A, B>) {
-    return right<A, C>(f(either.value));
-  } else {
-    return left<A, C>((either as Left<A, B>).value);
+  switch (either) {
+    case Right(value: var rightValue):
+      return Right<A, C>(f(rightValue));
+    case Left(value: var leftValue):
+      return Left<A, C>(leftValue);
   }
 }
 
@@ -156,10 +185,11 @@ Either<A, C> map<A, B, C>(Either<A, B> either, C Function(B) f) {
 /// print(result);  // This will print Right(5)
 /// ```
 Either<A, C> flatMap<A, B, C>(Either<A, B> either, Either<A, C> Function(B) f) {
-  if (either is Right<A, B>) {
-    return f(either.value);
-  } else {
-    return left<A, C>((either as Left<A, B>).value);
+  switch (either) {
+    case Right(value: var rightValue):
+      return f(rightValue);
+    case Left(value: var leftValue):
+      return Left<A, C>(leftValue);
   }
 }
 
@@ -178,14 +208,16 @@ final chain = flatMap;
 /// print(result);  // This will print Right('Hello 42')
 /// ```
 Either<A, B> ap<A, B, C>(Either<A, B Function(C)> fEither, Either<A, C> m) {
-  if (fEither is Left<A, B Function(C)>) {
-    return Left<A, B>(fEither.value);
-  } else if (m is Left<A, C>) {
-    return Left<A, B>(m.value);
-  } else {
-    var f = (fEither as Right<A, B Function(C)>).value;
-    var value = (m as Right<A, C>).value;
-    return right<A, B>(f(value));
+  switch (fEither) {
+    case Left(value: var leftFuncValue):
+      return Left<A, B>(leftFuncValue);
+    case Right(value: var func):
+      switch (m) {
+        case Left(value: var leftValue):
+          return Left<A, B>(leftValue);
+        case Right(value: var rightValue):
+          return Right<A, B>(func(rightValue));
+      }
   }
 }
 
@@ -333,15 +365,32 @@ Eq<Either<A, B>> getEq<A, B>(Eq<A> leftEq, Eq<B> rightEq) {
   return EitherEq<A, B>(leftEq, rightEq);
 }
 
-/// `EitherOrd` extends `Ord<Either<A, B>>`, which is a type that provides
-/// comparison and ordering functionalities for `Either` instances.
+/// A class that extends `Ord` to provide a custom ordering for `Either` values.
 ///
-/// It is parameterized by `A` and `B`, the type of elements contained in the `Either`.
+/// This class provides a way to compare two `Either` values based on the
+/// provided orderings for the `Left` and `Right` types.
 ///
-/// Equality is determined by the `eq` instance passed into `EitherOrd`'s constructor,
-/// and comparison is determined by the order of the `Either` instances: `Left` is considered
-/// less than `Right`, and for two `Right` instances or two `Left` instances, comparison is done based on the
-/// values they contain.
+/// If both `Either` values are `Left`, they are compared using the provided
+/// `leftOrd`. If both are `Right`, they are compared using the provided `rightOrd`.
+///
+/// If one is `Left` and the other is `Right`, `Left` is considered to come before `Right`.
+///
+/// Example usage:
+/// ```dart
+/// final intOrder = Ord<int>((a, b) => a.compareTo(b));
+/// final strOrder = Ord<String>((a, b) => a.compareTo(b));
+///
+/// final eitherOrder = EitherOrd(intOrder, strOrder);
+///
+/// final e1 = Left<int, String>(3);
+/// final e2 = Left<int, String>(5);
+/// final e3 = Right<int, String>("apple");
+/// final e4 = Right<int, String>("banana");
+///
+/// print(eitherOrder.compare(e1, e2)); // -1 because 3 < 5
+/// print(eitherOrder.compare(e3, e4)); // -1 because "apple" < "banana"
+/// print(eitherOrder.compare(e1, e3)); // -1 because Left always comes before Right
+/// ```
 class EitherOrd<A, B> extends Ord<Either<A, B>> {
   final Ord<A> leftOrd;
   final Ord<B> rightOrd;
@@ -350,40 +399,53 @@ class EitherOrd<A, B> extends Ord<Either<A, B>> {
       : super((Either<A, B> x, Either<A, B> y) {
           if (identical(x, y)) return 0;
 
-          if (x is Left<A, B> && y is Left<A, B>) {
-            return leftOrd.compare(x.value, y.value);
+          switch (x) {
+            case Left(value: var leftXValue):
+              if (y is Left<A, B>) {
+                return leftOrd.compare(leftXValue, y.value);
+              }
+              return -1;
+
+            case Right(value: var rightXValue):
+              if (y is Right<A, B>) {
+                return rightOrd.compare(rightXValue, y.value);
+              }
+              return 1;
           }
-
-          if (x is Right<A, B> && y is Right<A, B>) {
-            return rightOrd.compare(x.value, y.value);
-          }
-
-          if (x is Left<A, B> && y is Right<A, B>) return -1;
-
-          if (x is Right<A, B> && y is Left<A, B>) return 1;
-
-          throw StateError('Unreachable state');
         });
 
   @override
   bool equals(Either<A, B> x, Either<A, B> y) => compare(x, y) == 0;
 }
 
-/// Returns an `Ord<Either<A, B>>` based on the provided `Ord<A>` and `Ord<B>`.
+/// Returns an [Ord] instance for comparing `Either` values based on the provided
+/// orderings for the `Left` and `Right` types.
+///
+/// This function wraps around [EitherOrd] to provide a convenient way to get an
+/// ordering for `Either` values. The behavior of comparison follows the same rules
+/// as described in [EitherOrd].
 ///
 /// Example usage:
 /// ```dart
-/// final ordInt = Ord.fromCompare((int x, int y) => x.compareTo(y));
-/// final ordString = Ord.fromCompare((String x, String y) => x.compareTo(y));
-/// final eitherOrd = getOrd(ordString, ordInt);
+/// final intOrder = Ord<int>((a, b) => a.compareTo(b));
+/// final strOrder = Ord<String>((a, b) => a.compareTo(b));
 ///
-/// assert(eitherOrd.compare(Right("b"), Right("c")) < 0);
-/// assert(eitherOrd.compare(Right("c"), Right("b")) > 0);
-/// assert(eitherOrd.compare(Right("b"), Right("b")) == 0);
-/// assert(eitherOrd.compare(Left(1), Right("b")) < 0);
-/// assert(eitherOrd.compare(Right("b"), Left(1)) > 0);
-/// assert(eitherOrd.compare(Left(1), Left(1)) == 0);
+/// final eitherOrder = getOrd(intOrder, strOrder);
+///
+/// final e1 = Left<int, String>(3);
+/// final e2 = Left<int, String>(5);
+/// final e3 = Right<int, String>("apple");
+/// final e4 = Right<int, String>("banana");
+///
+/// print(eitherOrder.compare(e1, e2)); // -1 because 3 < 5
+/// print(eitherOrder.compare(e3, e4)); // -1 because "apple" < "banana"
+/// print(eitherOrder.compare(e1, e3)); // -1 because Left always comes before Right
 /// ```
+///
+/// - [leftOrd]: The ordering to be used for comparing `Left` values.
+/// - [rightOrd]: The ordering to be used for comparing `Right` values.
+///
+/// Returns: An instance of [EitherOrd] with the provided orderings.
 Ord<Either<A, B>> getOrd<A, B>(Ord<A> leftOrd, Ord<B> rightOrd) {
   return EitherOrd<A, B>(leftOrd, rightOrd);
 }
@@ -427,10 +489,12 @@ Either<E, il.ImmutableList<A>> sequenceList<E, A>(
   final result = <A>[];
 
   for (var e in list) {
-    if (e is Left<E, A>) {
-      return Left(e.value);
+    switch (e) {
+      case Left(value: var leftValue):
+        return Left<E, il.ImmutableList<A>>(leftValue);
+      case Right(value: var rightValue):
+        result.add(rightValue);
     }
-    result.add((e as Right<E, A>).value);
   }
 
   return Right(il.of(result));
@@ -468,12 +532,16 @@ Either<E, il.ImmutableList<A>> sequenceList<E, A>(
 Either<E, il.ImmutableList<B>> traverseList<E, A, B>(
     Either<E, B> Function(A) f, il.ImmutableList<A> list) {
   final results = <B>[];
+
   for (final item in list) {
     final result = f(item);
-    if (result is Left<E, B>) {
-      return Left<E, il.ImmutableList<B>>(result.value);
+    switch (result) {
+      case Left(value: var leftValue):
+        return Left<E, il.ImmutableList<B>>(leftValue);
+      case Right(value: var rightValue):
+        results.add(rightValue);
     }
-    results.add((result as Right<A, B>).value);
   }
-  return Right<E, il.ImmutableList<B>>(il.of<B>(results));
+
+  return Right(il.of(results));
 }

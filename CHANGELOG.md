@@ -41,3 +41,8 @@
 ## 0.5.1
 
 - Add and update README files
+
+## 0.5.2
+
+- Refactor to use exhaustive matching
+-

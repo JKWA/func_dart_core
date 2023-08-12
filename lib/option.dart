@@ -77,6 +77,8 @@ Option<B> of<B>(B value) {
   return Some<B>(value);
 }
 
+final some = of;
+
 /// Returns an [Option] based on the evaluation of a [Predicate] on a value.
 ///
 /// This function takes in a predicate (a function that returns a boolean) and
@@ -349,15 +351,24 @@ Eq<Option<A>> getEq<A>(Eq<A> eq) {
   return OptionEq<A>(eq);
 }
 
-/// `OptionOrd` extends `Ord<Option<A>>`, which is a type that provides
-/// comparison and ordering functionalities for `Option` instances.
+/// Provides an ordering for `Option<A>` based on an existing ordering for `A`.
 ///
-/// It is parameterized by `A`, the type of element contained in the `Option`.
+/// This is particularly useful when `Option<A>` values need to be sorted
+/// or otherwise ordered based on the encapsulated value.
 ///
-/// Equality is determined by the `eq` instance passed into `OptionOrd`'s constructor,
-/// and comparison is determined by the order of the options: `None` is considered
-/// less than `Some`, and for two `Some` instances, comparison is done based on the
-/// values they contain.
+/// Given an ordering for type `A` (provided by `Ord<A>`), the ordering for
+/// `Option<A>` is defined as follows:
+/// - `None` is considered less than any `Some<A>` value.
+/// - Two `None` values are considered equal.
+/// - Two `Some<A>` values are compared based on their encapsulated `A` values.
+///
+/// Example usage:
+/// ```dart
+/// final ordInt = IntOrd();
+/// final ordOptionInt = OptionOrd(ordInt);
+/// final result = ordOptionInt.compare(Some(3), Some(5)); // This will return a negative number
+/// final isEqual = ordOptionInt.equals(None(), None());  // This will return true
+/// ```
 class OptionOrd<A> extends Ord<Option<A>> {
   final Ord<A> ord;
 
@@ -365,17 +376,20 @@ class OptionOrd<A> extends Ord<Option<A>> {
       : super((Option<A> x, Option<A> y) {
           if (identical(x, y)) return 0;
 
-          if (x is None<A> && y is None<A>) return 0;
+          switch (x) {
+            case None():
+              if (y is Some<A>) return -1;
+              return 0;
 
-          if (x is None<A> && y is Some<A>) return -1;
+            case Some(value: var someValueX):
+              switch (y) {
+                case None():
+                  return 1;
 
-          if (x is Some<A> && y is None<A>) return 1;
-
-          if (x is Some<A> && y is Some<A>) {
-            return ord.compare(x.value, y.value);
+                case Some(value: var someValueY):
+                  return ord.compare(someValueX, someValueY);
+              }
           }
-
-          throw StateError('Unreachable state');
         });
 
   @override
@@ -441,14 +455,19 @@ Ord<Option<A>> getOrd<A>(Ord<A> ord) {
 /// print(resultWithNone); // Outputs: None
 /// ```
 Option<il.ImmutableList<A>> sequenceList<A>(il.ImmutableList<Option<A>> list) {
-  final result = <A>[];
+  final results = <A>[];
 
   for (var opt in list) {
-    if (opt is None<A>) return None();
-    result.add((opt as Some<A>).value);
+    switch (opt) {
+      case Some(value: var someValue):
+        results.add(someValue);
+        break;
+      case None():
+        return None();
+    }
   }
 
-  return Some(il.of(result));
+  return Some(il.of(results));
 }
 
 /// Takes an `ImmutableList` and a function, then applies the function to each item in the list.
