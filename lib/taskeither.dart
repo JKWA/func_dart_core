@@ -12,7 +12,7 @@ import 'package:func_dart_core/predicate.dart';
 /// ```
 sealed class TaskEither<A, B> {
   /// Represents the computation that will return an `Either<A, B>`.
-  Future<Either<A, B>> Function() get taskEither;
+  Future<Either<A, B>> Function() get value;
 
   /// Factory constructor to create a TaskEither from a computation.
   ///
@@ -20,19 +20,18 @@ sealed class TaskEither<A, B> {
   /// ```
   /// final computation = TaskEither(() => Future.value(Right<String, int>(5)));
   /// ```
-  factory TaskEither(Future<Either<A, B>> Function() taskEither) =
-      _TaskEither<A, B>;
+  factory TaskEither(Future<Either<A, B>> Function() value) = _TaskEither<A, B>;
 }
 
 class _TaskEither<A, B> implements TaskEither<A, B> {
-  final Future<Either<A, B>> Function() _taskEither;
+  final Future<Either<A, B>> Function() _value;
 
-  _TaskEither(this._taskEither);
+  _TaskEither(this._value);
 
   @override
-  Future<Either<A, B>> Function() get taskEither => _taskEither;
+  Future<Either<A, B>> Function() get value => _value;
 
-  Future<Either<A, B>> call() => _taskEither();
+  Future<Either<A, B>> call() => _value();
 }
 
 /// Create a `Left` value wrapped in a `TaskEither`.
@@ -65,64 +64,183 @@ TaskEither<A, B> of<A, B>(B value) {
   return right(value);
 }
 
-/// Maps over the successful result of the `TaskEither`, applying the function `f`.
+/// Applies the provided functions [onLeft] and [onRight] to handle the
+/// contents of a [TaskEither] instance. The returned function takes a [TaskEither]
+/// as input, awaits its computation, and depending on whether it's a `Left` or `Right`,
+/// invokes the appropriate function.
 ///
 /// Example:
+/// ```dart
+/// final taskEither = TaskEither<int, String>(() => Future.value(Right<String, int>(5)));
+///
+/// final result = await matchW<int, String, int, String>(
+///     (leftValue) async => 'Error: $leftValue',
+///     (rightValue) async => 'Success: $rightValue')(taskEither);
+///
+/// print(result); // Output: Success: 5
 /// ```
-/// final original = of<String, int>(5);
-/// final mapped = map(original, (num) => num * 2);
-/// ```
-TaskEither<A, B> map<A, C, B>(TaskEither<A, C> taskEither, B Function(C) f) {
-  return TaskEither<A, B>(() async {
-    final result = await taskEither.taskEither();
-
-    switch (result) {
-      case Left(value: var leftValue):
-        return Left<A, B>(leftValue);
-      case Right(value: var rightValue):
-        return Right<A, B>(f(rightValue));
-    }
-  });
+Future<D> Function(TaskEither<A, B>) matchW<A, B, C, D>(
+    Future<D> Function(A) onLeft, Future<D> Function(B) onRight) {
+  return (TaskEither<A, B> taskEither) async =>
+      switch (await taskEither.value()) {
+        Left(value: var leftValue) => await onLeft(leftValue),
+        Right(value: var rightValue) => await onRight(rightValue)
+      };
 }
 
-/// FlatMaps over the successful result of the `TaskEither`, allowing to chain asynchronous operations.
+/// Matches a [TaskEither<A, B>] to execute a function based on its `Left` or `Right` value asynchronously.
+/// Using Dart's pattern matching, the [match] function provides an expressive and concise way to handle
+/// `TaskEither` values without manual type checks and returns a [Future<C>] representing the computed value.
+///
+/// The returned function uses pattern matching on the result of [TaskEither<A, B>] and invokes
+/// the relevant asynchronous function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
 ///
 /// Example:
+/// ```dart
+/// final myTask = of<String, int>(10);
+/// final matchFn = match<String, int, String>(
+///     (left) => Future.value("Error: $left"),
+///     (right) => Future.value("Value: $right")
+/// );
+/// final result = await matchFn(myTask);
+/// print(result); // Prints: Value: 10
 /// ```
-/// final original = of<String, int>(5);
-/// final flatMapped = flatMap(original, (num) => of<String, int>(num * 2));
-/// ```
-TaskEither<A, B> flatMap<A, C, B>(
-    TaskEither<A, C> taskEither, TaskEither<A, B> Function(C) f) {
-  return TaskEither<A, B>(() async {
-    final result = await taskEither.taskEither();
-
-    switch (result) {
-      case Left(value: var leftValue):
-        return Left<A, B>(leftValue);
-      case Right(value: var rightValue):
-        return await f(rightValue).taskEither();
-    }
-  });
+// Future<C> Function(TaskEither<A, B>) match<A, B, C>(
+//     Future<C> Function(A) onLeft, Future<C> Function(B) onRight) {
+//   return (TaskEither<A, B> taskEither) async =>
+//       switch (await taskEither.value()) {
+//         Left(value: var leftValue) => await onLeft(leftValue),
+//         Right(value: var rightValue) => await onRight(rightValue)
+//       };
+// }
+Future<C> Function(TaskEither<A, B>) match<A, B, C>(
+    Future<C> Function(A) onLeft, Future<C> Function(B) onRight) {
+  return matchW<A, B, C, C>(onLeft, onRight);
 }
+
+/// Alias for match.
+final fold = match;
+
+/// Transforms the success value of a [TaskEither] instance using the provided function [f].
+///
+/// The [map] function takes a function [f] of type `B Function(C)` and returns a function
+/// that can transform a [TaskEither] with a success value of type `C` into a [TaskEither] with
+/// a success value of type `B`. If the [TaskEither] instance contains an error value, it remains unchanged.
+///
+/// This function is useful when you want to perform a synchronous transformation on the success
+/// value of a [TaskEither] without affecting its error value.
+///
+/// Example:
+/// ```dart
+/// final myTaskEither = TaskEither<int, String>(() => Future.value(Right<int, String>('Hello')));
+///
+/// final mappedTaskEither = map<String, int, String>((value) => '$value World')(myTaskEither);
+///
+/// mappedTaskEither.value.then((result) {
+///   // result is Right<int, String>('Hello World')
+/// });
+///
+/// final errorTaskEither = TaskEither<int, String>(() => Future.value(Left<int, String>(404)));
+///
+/// final anotherMappedTaskEither = map<String, int, String>((value) => '$value World')(errorTaskEither);
+///
+/// anotherMappedTaskEither.value.then((result) {
+///   // result is Left<int, String>(404)
+/// });
+/// ```
+///
+/// [f]: The transformation function applied to the success value.
+/// Returns: A function that can transform a [TaskEither<A, C>] to a [TaskEither<A, B>].
+TaskEither<A, B> Function(TaskEither<A, C>) map<A, C, B>(B Function(C) f) {
+  return (TaskEither<A, C> taskEither) => TaskEither<A, B>(() async {
+        return await match<A, C, Either<A, B>>(
+            (leftValue) async => Left<A, B>(leftValue),
+            (rightValue) async => Right<A, B>(f(rightValue)))(taskEither);
+      });
+}
+
+/// Transforms the success value of a [TaskEither] instance into another [TaskEither] using the provided function [f].
+///
+/// The [flatMap] function takes a function [f] of type `TaskEither<A, B> Function(C)` and returns a function
+/// that can transform a [TaskEither] with a success value of type `C` into a [TaskEither] with a success value of type `B`.
+/// If the [TaskEither] instance contains an error value, it remains unchanged.
+///
+/// This function is useful when you want to chain asynchronous computations that may fail,
+/// and transform the success value of one [TaskEither] into another [TaskEither].
+///
+/// Example:
+/// ```dart
+/// final myTaskEither = TaskEither<int, String>(() => Future.value(Right<int, String>('Hello')));
+///
+/// final transformedTaskEither = flatMap<String, int, String>((value) =>
+///     TaskEither<int, String>(() => Future.value(Right<int, String>('$value World')))
+/// )(myTaskEither);
+///
+/// transformedTaskEither.value.then((result) {
+///   // result is Right<int, String>('Hello World')
+/// });
+///
+/// final errorTaskEither = TaskEither<int, String>(() => Future.value(Left<int, String>(404)));
+///
+/// final anotherTransformedTaskEither = flatMap<String, int, String>((value) =>
+///     TaskEither<int, String>(() => Future.value(Right<int, String>('$value World')))
+/// )(errorTaskEither);
+///
+/// anotherTransformedTaskEither.value.then((result) {
+///   // result is Left<int, String>(404)
+/// });
+/// ```
+///
+/// [f]: The transformation function applied to the success value.
+/// Returns: A function that can transform a [TaskEither<A, C>] to a [TaskEither<A, B>].
+TaskEither<A, B> Function(TaskEither<A, C>) flatMap<A, C, B>(
+        TaskEither<A, B> Function(C) f) =>
+    (TaskEither<A, C> taskEither) => TaskEither<A, B>(() async =>
+        await match<A, C, Either<A, B>>((a) => Future.value(Left<A, B>(a)),
+            (c) async => await f(c).value())(taskEither));
 
 /// Alias for flatMap, allowing for chaining asynchronous operations.
 final chain = flatMap;
 
-/// Applies the function wrapped in the `TaskEither` to another `TaskEither` value.
+/// Applies the provided function wrapped in a [TaskEither] instance to a [TaskEither] instance.
+///
+/// The [ap] function allows you to apply a function wrapped inside a `TaskEither` (usually referred to as an "applicative action")
+/// to another `TaskEither` instance. It is essentially used to combine the effects of two `TaskEither` instances.
+///
+/// This function is primarily useful in contexts where you have both data and function inside a context (in this case, `TaskEither`)
+/// and you want to apply this function to this data, all while keeping everything inside the context.
 ///
 /// Example:
+/// ```dart
+/// final myFunctionTaskEither = TaskEither<int, String Function(int)>(
+///     () => Future.value(Right<int, String Function(int)>((x) => 'Result: ${x + 10}'))
+/// );
+///
+/// final myDataTaskEither = TaskEither<int, int>(() => Future.value(Right<int, int>(5)));
+///
+/// final resultTaskEither = ap(myFunctionTaskEither)(myDataTaskEither);
+///
+/// resultTaskEither.value.then((result) {
+///   // result is Right<int, String>('Result: 15')
+/// });
+///
+/// final errorFunctionTaskEither = TaskEither<int, String Function(int)>(
+///     () => Future.value(Left<int, String Function(int)>(404))
+/// );
+///
+/// final anotherResultTaskEither = ap(errorFunctionTaskEither)(myDataTaskEither);
+///
+/// anotherResultTaskEither.value.then((result) {
+///   // result is Left<int, String Function(int)>(404)
+/// });
 /// ```
-/// final functionTask = of<String, Function(int)>( (num) => num + 10 );
-/// final valueTask = of<String, int>(5);
-/// final applied = ap(functionTask, valueTask);
-/// ```
-TaskEither<A, B> ap<A, C, B>(
-    TaskEither<A, B Function(C)> fTaskEither, TaskEither<A, C> m) {
-  return flatMap(fTaskEither, (B Function(C) f) {
-    return map(m, f);
-  });
-}
+///
+/// [fnTaskEither]: The `TaskEither` containing the function to be applied.
+/// Returns: A function that takes a [TaskEither] and applies the function contained in [fnTaskEither] to it.
+TaskEither<A, B> Function(TaskEither<A, C>) ap<A, C, B>(
+        TaskEither<A, B Function(C)> fnTaskEither) =>
+    (TaskEither<A, C> taskEither) => flatMap<A, B Function(C), B>(
+        (B Function(C) fn) => map<A, C, B>(fn)(taskEither))(fnTaskEither);
 
 typedef TapFunctionEither<A, B> = TaskEither<A, B> Function(
     TaskEither<A, B> taskEither);
@@ -136,7 +254,7 @@ typedef TapFunctionEither<A, B> = TaskEither<A, B> Function(
 /// ```
 TapFunctionEither<A, B> tap<A, B>(void Function(B) f) {
   return (TaskEither<A, B> taskEither) {
-    taskEither.taskEither().then((eitherResult) {
+    taskEither.value().then((eitherResult) {
       if (eitherResult is Right<A, B>) {
         f(eitherResult.value);
       }
@@ -147,30 +265,6 @@ TapFunctionEither<A, B> tap<A, B>(void Function(B) f) {
 
 /// Alias for tap.
 final chainFirst = tap;
-
-/// Checks if the `TaskEither` is a Left value.
-///
-/// Example:
-/// ```
-/// final original = left<String, int>("Error");
-/// final result = await isLeft(original); // true
-/// ```
-Future<bool> isLeft<A, B>(TaskEither<A, B> taskEither) async {
-  final either = await taskEither.taskEither();
-  return either is Left<A, B>;
-}
-
-/// Checks if the `TaskEither` is a Right value.
-///
-/// Example:
-/// ```
-/// final original = of<String, int>(15);
-/// final result = await isRight(original); // true
-/// ```
-Future<bool> isRight<A, B>(TaskEither<A, B> taskEither) async {
-  final either = await taskEither.taskEither();
-  return either is Right<A, B>;
-}
 
 /// Creates a `TaskEither` from a predicate and value.
 /// Returns `Right` if predicate passes, otherwise returns `Left` with a provided error value.
@@ -212,38 +306,6 @@ TaskEither<A, B> fromOption<A, B>(o.Option<B> option, A Function() leftValue) {
   });
 }
 
-/// Matches a [TaskEither<A, B>] to execute a function based on its `Left` or `Right` value asynchronously.
-/// Using Dart's pattern matching, the [match] function provides an expressive and concise way to handle
-/// `TaskEither` values without manual type checks and returns a [Future<C>] representing the computed value.
-///
-/// The returned function uses pattern matching on the result of [TaskEither<A, B>] and invokes
-/// the relevant asynchronous function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
-///
-/// Example:
-/// ```dart
-/// final myTask = of<String, int>(10);
-/// final matchFn = match<String, int, String>(
-///     (left) => Future.value("Error: $left"),
-///     (right) => Future.value("Value: $right")
-/// );
-/// final result = await matchFn(myTask);
-/// print(result); // Prints: Value: 10
-/// ```
-Future<C> Function(TaskEither<A, B>) match<A, B, C>(
-    Future<C> Function(A) onLeft, Future<C> Function(B) onRight) {
-  return (TaskEither<A, B> taskEither) async {
-    final either = await taskEither.taskEither();
-
-    return switch (either) {
-      Left(value: var leftValue) => await onLeft(leftValue),
-      Right(value: var rightValue) => await onRight(rightValue)
-    };
-  };
-}
-
-/// Alias for match.
-final fold = match;
-
 /// Extracts the value from `Right` or provides a default value for `Left`.
 ///
 /// Example:
@@ -253,7 +315,7 @@ final fold = match;
 /// ```
 Future<B> getOrElse<A, B>(
     TaskEither<A, B> taskEither, B Function(A) defaultValue) async {
-  final result = await taskEither.taskEither();
+  final result = await taskEither.value();
 
   switch (result) {
     case Left(value: var leftValue):
@@ -308,7 +370,7 @@ Future<Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
   final results = <B>[];
 
   for (var taskEither in list) {
-    Either<A, B> result = await taskEither.taskEither();
+    Either<A, B> result = await taskEither.value();
     switch (result) {
       case Left(value: var leftValue):
         return Left<A, il.ImmutableList<B>>(leftValue);
@@ -371,7 +433,7 @@ Future<Either<E, il.ImmutableList<B>>> traverseList<E, A, B>(
   final results = <B>[];
 
   for (final item in list) {
-    final result = await f(item).taskEither();
+    final result = await f(item).value();
     switch (result) {
       case Left(value: var leftValue):
         return Left<E, il.ImmutableList<B>>(leftValue);

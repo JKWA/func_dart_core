@@ -59,5 +59,6 @@
 - (breaking change) - Update map to curry value
 - (breaking change) - Update flatMap/chain to curry value
 - (breaking change) - Update ap to curry value
+- (breaking change) - Remove refinements from TaskEither
 - Refactor sequenceList to reuse match
 - Add matchW

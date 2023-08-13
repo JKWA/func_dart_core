@@ -356,14 +356,11 @@ final chain = flatMap;
 /// @param fEither The `Either` that may contain a function of type `B Function(C)`.
 /// @return A function that takes an `Either<A, C>` and returns an `Either<A, B>`.
 Either<A, B> Function(Either<A, C>) ap<A, B, C>(
-        Either<A, B Function(C)> fEither) =>
-    (Either<A, C> m) => switch (fEither) {
-          Left(value: var leftFuncValue) => Left<A, B>(leftFuncValue),
-          Right(value: var func) => switch (m) {
-              Left(value: var leftValue) => Left<A, B>(leftValue),
-              Right(value: var rightValue) => Right<A, B>(func(rightValue))
-            }
-        };
+        Either<A, B Function(C)> fnEither) =>
+    (Either<A, C> either) => flatMap<A, B Function(C), B>((B Function(C) fn) {
+          return match<A, C, Either<A, B>>(
+              (a) => Left<A, B>(a), (c) => Right<A, B>(fn(c)))(either);
+        })(fnEither);
 
 typedef TapFunction<A, B> = Either<A, B> Function(Either<A, B> either);
 

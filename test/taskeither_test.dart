@@ -24,124 +24,154 @@ void main() {
       final String value = 'Error';
       final te = left<String, int>(value);
 
-      expect(await te.taskEither(), e.Left<String, int>(value));
+      expect(await te.value(), e.Left<String, int>(value));
     });
 
     test('right should return a Right wrapped in a Future', () async {
       final int value = 42;
       final te = right<String, int>(value);
 
-      expect(await te.taskEither(), e.Right<String, int>(value));
+      expect(await te.value(), e.Right<String, int>(value));
     });
 
     test('of should wrap a value into a Right wrapped in a Future', () async {
       final int value = 99;
       final te = of<String, int>(value);
 
-      expect(await te.taskEither(), e.Right<String, int>((value)));
+      expect(await te.value(), e.Right<String, int>((value)));
     });
   });
-  group('TaskEither - map', () {
-    test('should not transform a Left value', () async {
-      final String leftValue = 'Error';
-      final taskEither = left<String, int>(leftValue);
-      final mapped = map(taskEither, (int value) => value + 1);
+  group('map - ', () {
+    test('it should map over a Right value', () async {
+      final te = TaskEither<Error, int>(() async => e.Right(5));
+      final mapper = map<Error, int, String>((int value) => 'Value: $value');
+      final mappedTE = mapper(te);
 
-      final result = await mapped.taskEither();
+      final result = await mappedTE.value();
 
-      expect(result is e.Left<String, int>, true);
-      expect((result as e.Left<String, int>).value, equals(leftValue));
-    });
-
-    test('should transform a Right value', () async {
-      final int rightValue = 42;
-      final taskEither = right<String, int>(rightValue);
-      final mapped = map(taskEither, (int value) => value + 1);
-
-      final result = await mapped.taskEither();
-
-      expect(result is e.Right<String, int>, true);
-      expect((result as e.Right<String, int>).value, equals(43));
-    });
-  });
-  group('TaskEither - flatMap', () {
-    test('should not transform a Left value', () async {
-      final String leftValue = 'Error';
-      final taskEither = left<String, int>(leftValue);
-      final flatMapped =
-          flatMap(taskEither, (int value) => right<String, int>(value + 1));
-
-      final result = await flatMapped.taskEither();
-
-      expect(result is e.Left<String, int>, true);
-      expect((result as e.Left<String, int>).value, equals(leftValue));
-    });
-
-    test('should transform a Right value', () async {
-      final int rightValue = 42;
-      final taskEither = right<String, int>(rightValue);
-      final flatMapped =
-          flatMap(taskEither, (int value) => right<String, int>(value + 1));
-
-      final result = await flatMapped.taskEither();
-
-      expect(result is e.Right<String, int>, true);
-      expect((result as e.Right<String, int>).value, equals(43));
-    });
-
-    test('should handle transformation to a Left value from a Right value',
-        () async {
-      final int rightValue = 42;
-      final String transformedLeftValue = 'Transformed Error';
-      final taskEither = right<String, int>(rightValue);
-      final flatMapped = flatMap(
-          taskEither, (int value) => left<String, int>(transformedLeftValue));
-
-      final result = await flatMapped.taskEither();
-
-      expect(result is e.Left<String, int>, true);
       expect(
-          (result as e.Left<String, int>).value, equals(transformedLeftValue));
+          result,
+          isA<
+              e.Right<Error,
+                  String>>()); // Notice the change here from int to String
+      expect((result as e.Right<Error, String>).value, 'Value: 5');
+    });
+
+    test('it should not affect a Left value', () async {
+      final te = TaskEither<Error, int>(() async => e.Left(Error()));
+      final mapper = map<Error, int, String>((int value) => 'Value: $value');
+      final mappedTE = mapper(te);
+
+      final result = await mappedTE.value();
+
+      expect(
+          result,
+          isA<
+              e.Left<Error,
+                  String>>()); // Notice the change here from int to String
+      expect((result as e.Left<Error, String>).value, isA<Error>());
+    });
+
+    test('it should handle exceptions thrown inside the TaskEither', () async {
+      final te = TaskEither<Error, int>(() async {
+        throw Error();
+      });
+
+      final mapper = map<Error, int, String>((int value) => 'Value: $value');
+      final mappedTE = mapper(te);
+
+      expect(mappedTE.value(), throwsA(isA<Error>()));
     });
   });
-  group('TaskEither - ap', () {
-    test('should not apply function if fTaskEither is Left', () async {
-      final String leftValue = 'Error';
-      final taskEitherFunc = left<String, int Function(int)>(leftValue);
-      final taskEitherVal = right<String, int>(5);
 
-      final applied = ap(taskEitherFunc, taskEitherVal);
+  group('flatMap - ', () {
+    test('it should process a Right value correctly', () async {
+      final te = TaskEither<Error, int>(() async => e.Right(5));
+      final mapper = flatMap<Error, int, String>((int value) =>
+          TaskEither<Error, String>(() async => e.Right('Value: $value')));
+      final mappedTE = mapper(te);
 
-      final result = await applied.taskEither();
+      final result = await mappedTE.value();
 
-      expect(result is e.Left<String, int>, true);
-      expect((result as e.Left<String, int>).value, equals(leftValue));
+      expect(result, isA<e.Right<Error, String>>());
+      expect((result as e.Right<Error, String>).value, 'Value: 5');
     });
 
-    test('ap should not apply function if m is Left', () async {
-      final String leftValue = 'Error';
-      final taskEitherFunc = right<String, int Function(int)>((x) => x + 1);
-      final taskEitherVal = left<String, int>(leftValue);
+    test('it should not affect a Left value', () async {
+      final te = TaskEither<Error, int>(() async => e.Left(Error()));
+      final mapper = flatMap<Error, int, String>((int value) =>
+          TaskEither<Error, String>(() async => e.Right('Value: $value')));
+      final mappedTE = mapper(te);
 
-      final applied = ap(taskEitherFunc, taskEitherVal);
+      final result = await mappedTE.value();
 
-      final result = await applied.taskEither();
-
-      expect(result is e.Left<String, int>, true);
-      expect((result as e.Left<String, int>).value, equals(leftValue));
+      expect(result, isA<e.Left<Error, String>>());
+      expect((result as e.Left<Error, String>).value, isA<Error>());
     });
 
-    test('ap should apply function if both fTaskEither and m are Right',
-        () async {
-      final taskEitherFunc = right<String, int Function(int)>((x) => x + 1);
-      final taskEitherVal = right<String, int>(5);
+    test('it should handle nested Right values correctly', () async {
+      final te = TaskEither<Error, int>(() async => e.Right(5));
+      final mapper = flatMap<Error, int, String>((int value) =>
+          TaskEither<Error, String>(() async => value > 3
+              ? e.Right('Value is greater than 3')
+              : e.Right('Value is not greater than 3')));
+      final mappedTE = mapper(te);
 
-      final applied = ap(taskEitherFunc, taskEitherVal);
+      final result = await mappedTE.value();
 
-      final result = await applied.taskEither();
+      expect(result, isA<e.Right<Error, String>>());
+      expect(
+          (result as e.Right<Error, String>).value, 'Value is greater than 3');
+    });
+  });
 
-      expect(result is e.Right<String, int>, true);
-      expect((result as e.Right<String, int>).value, equals(6));
+  group('ap -', () {
+    test('it should apply a Right function to a Right value', () async {
+      final fTaskEither = TaskEither<Error, String Function(int)>(
+          () async => e.Right((int val) => 'Value: $val'));
+      final m = TaskEither<Error, int>(() async => e.Right(5));
+
+      final resultTE = ap(fTaskEither)(m);
+      final result = await resultTE.value();
+
+      expect(result, isA<e.Right<Error, String>>());
+      expect((result as e.Right<Error, String>).value, 'Value: 5');
+    });
+
+    test('it should not apply a Right function to a Left value', () async {
+      final fTaskEither = TaskEither<Error, String Function(int)>(
+          () async => e.Right((int val) => 'Value: $val'));
+      final m = TaskEither<Error, int>(() async => e.Left(Error()));
+
+      final resultTE = ap(fTaskEither)(m);
+      final result = await resultTE.value();
+
+      expect(result, isA<e.Left<Error, String>>());
+      expect((result as e.Left).value, isA<Error>());
+    });
+
+    test('it should not apply a Left function to a Right value', () async {
+      final fTaskEither =
+          TaskEither<Error, String Function(int)>(() async => e.Left(Error()));
+      final m = TaskEither<Error, int>(() async => e.Right(5));
+
+      final resultTE = ap(fTaskEither)(m);
+      final result = await resultTE.value();
+
+      expect(result, isA<e.Left<Error, String>>());
+      expect((result as e.Left).value, isA<Error>());
+    });
+
+    test('it should not apply a Left function to a Left value', () async {
+      final fTaskEither =
+          TaskEither<Error, String Function(int)>(() async => e.Left(Error()));
+      final m = TaskEither<Error, int>(() async => e.Left(Error()));
+
+      final resultTE = ap(fTaskEither)(m);
+      final result = await resultTE.value();
+
+      expect(result, isA<e.Left<Error, String>>());
+      expect((result as e.Left).value, isA<Error>());
     });
   });
 
@@ -157,7 +187,7 @@ void main() {
         sideEffectResult = value + 5;
       })(taskEither);
 
-      final result = await newTaskEither.taskEither();
+      final result = await newTaskEither.value();
 
       expect(result is e.Right<String, int>, true);
       expect((result as e.Right<String, int>).value, equals(rightValue));
@@ -175,7 +205,7 @@ void main() {
         sideEffectResult = value + 5;
       })(taskEither);
 
-      final result = await newTaskEither.taskEither();
+      final result = await newTaskEither.value();
 
       expect(result is e.Left<String, int>, true);
       expect((result as e.Left<String, int>).value, equals(leftValue));
@@ -183,39 +213,7 @@ void main() {
           sideEffectResult, equals(0)); // Ensure side effect was not performed.
     });
   });
-  group('Refinements - ', () {
-    test('isLeft should return true for a TaskEither containing a Left value',
-        () async {
-      final taskEither = left<String, int>('Error');
-      final bool result = await isLeft(taskEither);
 
-      expect(result, true);
-    });
-
-    test('isRight should return true for a TaskEither containing a Right value',
-        () async {
-      final taskEither = right<String, int>(42);
-      final bool result = await isRight(taskEither);
-
-      expect(result, true);
-    });
-
-    test('isLeft should return false for a TaskEither containing a Right value',
-        () async {
-      final taskEither = right<String, int>(42);
-      final bool result = await isLeft(taskEither);
-
-      expect(result, false);
-    });
-
-    test('isRight should return false for a TaskEither containing a Left value',
-        () async {
-      final taskEither = left<String, int>('Error');
-      final bool result = await isRight(taskEither);
-
-      expect(result, false);
-    });
-  });
   group('TaskEither - fromPredicateTaskEither', () {
     bool isEven(int value) => value % 2 == 0;
     final String errorMessage = "Not even!";
@@ -227,7 +225,7 @@ void main() {
 
     test('should return a right value if predicate is true', () async {
       final result = fromPredicate(4); // 4 is even.
-      final eitherResult = await result.taskEither();
+      final eitherResult = await result.value();
 
       expect(eitherResult, isA<e.Right<String, int>>());
       expect((eitherResult as e.Right<String, int>).value, 4);
@@ -235,7 +233,7 @@ void main() {
 
     test('should return a left value if predicate is false', () async {
       final result = fromPredicate(5); // 5 is not even.
-      final eitherResult = await result.taskEither();
+      final eitherResult = await result.value();
 
       expect(eitherResult, isA<e.Left<String, int>>());
       expect((eitherResult as e.Left<String, int>).value, errorMessage);
@@ -247,7 +245,7 @@ void main() {
     test('should return a right value if Option is Some', () async {
       final option = o.Some<int>(42);
       final result = fromOption(option, () => errorMessage);
-      final eitherResult = await result.taskEither();
+      final eitherResult = await result.value();
 
       expect(eitherResult, isA<e.Right<String, int>>());
       expect((eitherResult as e.Right<String, int>).value, 42);
@@ -256,10 +254,45 @@ void main() {
     test('should return a left value if Option is None', () async {
       final option = o.None<int>();
       final result = fromOption(option, () => errorMessage);
-      final eitherResult = await result.taskEither();
+      final eitherResult = await result.value();
 
       expect(eitherResult, isA<e.Left<String, int>>());
       expect((eitherResult as e.Left<String, int>).value, errorMessage);
+    });
+  });
+
+  group('matchW for TaskEither', () {
+    test('should handle Left value', () async {
+      final taskEither =
+          TaskEither<int, String>(() => Future.value(e.Left(42)));
+      final result = await matchW<int, String, int, String>(
+          (a) async => 'Error: $a', (b) async => 'Success: $b')(taskEither);
+      expect(result, equals('Error: 42'));
+    });
+
+    test('should handle Right value', () async {
+      final taskEither =
+          TaskEither<int, String>(() => Future.value(e.Right('Hello')));
+      final result = await matchW<int, String, int, String>(
+          (a) async => 'Error: $a', (b) async => 'Success: $b')(taskEither);
+      expect(result, equals('Success: Hello'));
+    });
+
+    test('should propagate errors from onLeft function', () async {
+      final taskEither =
+          TaskEither<int, String>(() => Future.value(e.Left(42)));
+      final result = matchW<int, String, int, String>(
+          (a) async => throw Exception('Error in onLeft'),
+          (b) async => 'Success: $b')(taskEither);
+      expect(result, throwsException);
+    });
+
+    test('should propagate errors from onRight function', () async {
+      final taskEither =
+          TaskEither<int, String>(() => Future.value(e.Right('Hello')));
+      final result = matchW<int, String, int, String>((a) async => 'Error: $a',
+          (b) async => throw Exception('Error in onRight'))(taskEither);
+      expect(result, throwsException);
     });
   });
 
