@@ -1,4 +1,4 @@
-import 'package:func_dart_core/either.dart';
+import 'package:func_dart_core/either.dart' as e;
 import 'package:func_dart_core/list.dart' as il;
 import 'package:func_dart_core/option.dart' as o;
 import 'package:func_dart_core/predicate.dart';
@@ -12,7 +12,7 @@ import 'package:func_dart_core/predicate.dart';
 /// ```
 sealed class TaskEither<A, B> {
   /// Represents the computation that will return an `Either<A, B>`.
-  Future<Either<A, B>> Function() get value;
+  Future<e.Either<A, B>> Function() get value;
 
   /// Factory constructor to create a TaskEither from a computation.
   ///
@@ -20,18 +20,19 @@ sealed class TaskEither<A, B> {
   /// ```
   /// final computation = TaskEither(() => Future.value(Right<String, int>(5)));
   /// ```
-  factory TaskEither(Future<Either<A, B>> Function() value) = _TaskEither<A, B>;
+  factory TaskEither(Future<e.Either<A, B>> Function() value) =
+      _TaskEither<A, B>;
 }
 
 class _TaskEither<A, B> implements TaskEither<A, B> {
-  final Future<Either<A, B>> Function() _value;
+  final Future<e.Either<A, B>> Function() _value;
 
   _TaskEither(this._value);
 
   @override
-  Future<Either<A, B>> Function() get value => _value;
+  Future<e.Either<A, B>> Function() get value => _value;
 
-  Future<Either<A, B>> call() => _value();
+  Future<e.Either<A, B>> call() => _value();
 }
 
 /// Create a `Left` value wrapped in a `TaskEither`.
@@ -41,7 +42,7 @@ class _TaskEither<A, B> implements TaskEither<A, B> {
 /// final errorTask = left<String, int>("Error");
 /// ```
 TaskEither<A, B> left<A, B>(A value) {
-  return TaskEither(() => Future.value(Left<A, B>(value)));
+  return TaskEither(() => Future.value(e.Left<A, B>(value)));
 }
 
 /// Create a `Right` value wrapped in a `TaskEither`.
@@ -51,7 +52,7 @@ TaskEither<A, B> left<A, B>(A value) {
 /// final successTask = right<String, int>(10);
 /// ```
 TaskEither<A, B> right<A, B>(B value) {
-  return TaskEither(() => Future.value(Right<A, B>(value)));
+  return TaskEither(() => Future.value(e.Right<A, B>(value)));
 }
 
 /// Shorthand for creating a `Right` value wrapped in a `TaskEither`.
@@ -83,8 +84,8 @@ Future<D> Function(TaskEither<A, B>) matchW<A, B, C, D>(
     Future<D> Function(A) onLeft, Future<D> Function(B) onRight) {
   return (TaskEither<A, B> taskEither) async =>
       switch (await taskEither.value()) {
-        Left(value: var leftValue) => await onLeft(leftValue),
-        Right(value: var rightValue) => await onRight(rightValue)
+        e.Left(value: var leftValue) => await onLeft(leftValue),
+        e.Right(value: var rightValue) => await onRight(rightValue)
       };
 }
 
@@ -153,9 +154,9 @@ final fold = match;
 /// Returns: A function that can transform a [TaskEither<A, C>] to a [TaskEither<A, B>].
 TaskEither<A, B> Function(TaskEither<A, C>) map<A, C, B>(B Function(C) f) {
   return (TaskEither<A, C> taskEither) => TaskEither<A, B>(() async {
-        return await match<A, C, Either<A, B>>(
-            (leftValue) async => Left<A, B>(leftValue),
-            (rightValue) async => Right<A, B>(f(rightValue)))(taskEither);
+        return await match<A, C, e.Either<A, B>>(
+            (leftValue) async => e.Left<A, B>(leftValue),
+            (rightValue) async => e.Right<A, B>(f(rightValue)))(taskEither);
       });
 }
 
@@ -196,7 +197,7 @@ TaskEither<A, B> Function(TaskEither<A, C>) map<A, C, B>(B Function(C) f) {
 TaskEither<A, B> Function(TaskEither<A, C>) flatMap<A, C, B>(
         TaskEither<A, B> Function(C) f) =>
     (TaskEither<A, C> taskEither) => TaskEither<A, B>(() async =>
-        await match<A, C, Either<A, B>>((a) => Future.value(Left<A, B>(a)),
+        await match<A, C, e.Either<A, B>>((a) => Future.value(e.Left<A, B>(a)),
             (c) async => await f(c).value())(taskEither));
 
 /// Alias for flatMap, allowing for chaining asynchronous operations.
@@ -255,7 +256,7 @@ typedef TapFunctionEither<A, B> = TaskEither<A, B> Function(
 TapFunctionEither<A, B> tap<A, B>(void Function(B) f) {
   return (TaskEither<A, B> taskEither) {
     taskEither.value().then((eitherResult) {
-      if (eitherResult is Right<A, B>) {
+      if (eitherResult is e.Right<A, B>) {
         f(eitherResult.value);
       }
     }).catchError((_) {});
@@ -299,9 +300,9 @@ TaskEither<A, B> fromOption<A, B>(o.Option<B> option, A Function() leftValue) {
   return TaskEither<A, B>(() async {
     switch (option) {
       case o.Some(value: var someValue):
-        return Right<A, B>(someValue);
+        return e.Right<A, B>(someValue);
       case o.None():
-        return Left<A, B>(leftValue());
+        return e.Left<A, B>(leftValue());
     }
   });
 }
@@ -318,9 +319,9 @@ Future<B> getOrElse<A, B>(
   final result = await taskEither.value();
 
   switch (result) {
-    case Left(value: var leftValue):
+    case e.Left(value: var leftValue):
       return defaultValue(leftValue);
-    case Right(value: var rightValue):
+    case e.Right(value: var rightValue):
       return rightValue;
   }
 }
@@ -365,21 +366,21 @@ Future<B> getOrElse<A, B>(
 /// @param list The list of `TaskEither` computations to be sequenced.
 /// @return A `Future` that resolves to an `Either` containing either an error
 /// or a list of results.
-Future<Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
+Future<e.Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
     il.ImmutableList<TaskEither<A, B>> list) async {
   final results = <B>[];
 
   for (var taskEither in list) {
-    Either<A, B> result = await taskEither.value();
+    e.Either<A, B> result = await taskEither.value();
     switch (result) {
-      case Left(value: var leftValue):
-        return Left<A, il.ImmutableList<B>>(leftValue);
-      case Right(value: var rightValue):
+      case e.Left(value: var leftValue):
+        return e.Left<A, il.ImmutableList<B>>(leftValue);
+      case e.Right(value: var rightValue):
         results.add(rightValue);
     }
   }
 
-  return Right(il.of(results));
+  return e.Right(il.of(results));
 }
 
 /// Traverses a list of items, applying a function to each item, and then
@@ -428,19 +429,19 @@ Future<Either<A, il.ImmutableList<B>>> sequenceList<A, B>(
 /// @param list The list of items to traverse.
 /// @return A `Future` that resolves to an `Either` containing either an error
 /// or a list of results.
-Future<Either<E, il.ImmutableList<B>>> traverseList<E, A, B>(
+Future<e.Either<E, il.ImmutableList<B>>> traverseList<E, A, B>(
     TaskEither<E, B> Function(A) f, il.ImmutableList<A> list) async {
   final results = <B>[];
 
   for (final item in list) {
     final result = await f(item).value();
     switch (result) {
-      case Left(value: var leftValue):
-        return Left<E, il.ImmutableList<B>>(leftValue);
-      case Right(value: var rightValue):
+      case e.Left(value: var leftValue):
+        return e.Left<E, il.ImmutableList<B>>(leftValue);
+      case e.Right(value: var rightValue):
         results.add(rightValue);
     }
   }
 
-  return Right<E, il.ImmutableList<B>>(il.of(results));
+  return e.Right<E, il.ImmutableList<B>>(il.of(results));
 }
