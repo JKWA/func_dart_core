@@ -103,31 +103,103 @@ void main() {
     });
   });
 
-  test('map function', () {
-    final either1 = right<int, String>('Hello');
-    final either2 = map(either1, (value) => value.length);
-    expect(either2, isA<Right<int, int>>());
-    expect((either2 as Right<int, int>).value, equals(5));
+  group('Either map function', () {
+    // The mapping function
+    int mapperFunction(String value) => value.length;
+
+    test('should correctly map over a Right value', () {
+      final Either<int, String> eitherRight = Right<int, String>("hello");
+      final Either<int, int> mapped =
+          map<int, String, int>(mapperFunction)(eitherRight);
+      expect(mapped, isA<Right<int, int>>());
+      expect((mapped as Right).value, equals(5)); // "hello" length
+    });
+
+    test('should return the same Left value when mapping over a Left', () {
+      final Either<int, String> eitherLeft = Left<int, String>(3);
+      final Either<int, int> mapped =
+          map<int, String, int>(mapperFunction)(eitherLeft);
+      expect(mapped, isA<Left<int, int>>());
+      expect((mapped as Left).value, equals(3)); // Left value remains unchanged
+    });
+
+    test(
+        'should map with a different function and produce expected Right value',
+        () {
+      // Explicitly type the function
+      String anotherFunction(String s) => "$s world";
+
+      final Either<int, String> either = Right<int, String>("hello");
+      final Either<int, String> mapped =
+          map<int, String, String>(anotherFunction)(either);
+      expect(mapped, isA<Right<int, String>>());
+      expect((mapped as Right).value, equals("hello world"));
+    });
   });
 
-  test('flatMap function', () {
-    final either1 = right<int, String>('Hello');
-    final either2 = flatMap(either1, (value) => right<int, int>(value.length));
-    expect(either2, isA<Right<int, int>>());
-    expect((either2 as Right<int, int>).value, equals(5));
+  group('flatMap - ', () {
+    test('should correctly map over a Right value', () {
+      final Either<int, String> eitherRight = Right<int, String>("hello");
+      final Either<int, int> mapped = flatMap<int, String, int>(
+          (s) => Right<int, int>(s.length))(eitherRight);
+      expect(mapped, isA<Right<int, int>>());
+      expect(
+          (mapped as Right<int, int>).value, equals(5)); // hello's length is 5
+    });
 
-    final either3 = left<int, String>(42);
-    final either4 = flatMap(either3, (value) => right<int, int>(value.length));
-    expect(either4, isA<Left<int, int>>());
-    expect((either4 as Left<int, int>).value, equals(42));
+    test('should return the same Left value when flatMapping over a Left', () {
+      final Either<int, String> eitherLeft = Left<int, String>(3);
+      final Either<int, String> mapped = flatMap<int, String, String>(
+          (s) => Right<int, String>('$s added'))(eitherLeft);
+      expect(mapped, isA<Left<int, String>>());
+      expect((mapped as Left<int, String>).value,
+          equals(3)); // left value remains unchanged
+    });
   });
 
-  test('ap function', () {
-    final either1 = right<int, String Function(int)>((value) => 'Hello $value');
-    final either2 = right<int, int>(42);
-    final either3 = ap(either1, either2);
-    expect(either3, isA<Right<int, String>>());
-    expect((either3 as Right<int, String>).value, equals('Hello 42'));
+  group('ap - ', () {
+    test('should apply function inside a Right to value inside another Right',
+        () {
+      var f = Right<int, int Function(String)>((s) => s.length);
+      var m = Right<int, String>("hello");
+
+      var result = ap(f)(m);
+
+      expect(result, isA<Right<int, int>>()); // Notice the type change here
+      expect((result as Right).value, equals(5));
+    });
+
+    test('should return Left if function is inside a Left', () {
+      var f = Left<int, int Function(String)>(42);
+      var m = Right<int, String>("hello");
+
+      var result = ap(f)(m);
+
+      expect(result, isA<Left<int, int>>()); // Notice the type change here
+      expect((result as Left).value, equals(42));
+    });
+
+    test(
+        'should return Left if function is inside a Right but value is inside a Left',
+        () {
+      var f = Right<int, int Function(String)>((s) => s.length);
+      var m = Left<int, String>(100);
+
+      var result = ap(f)(m);
+
+      expect(result, isA<Left<int, int>>()); // Notice the type change here
+      expect((result as Left).value, equals(100));
+    });
+
+    test('should return Left if both function and value are inside Lefts', () {
+      var f = Left<int, int Function(String)>(42);
+      var m = Left<int, String>(100);
+
+      var result = ap(f)(m);
+
+      expect(result, isA<Left<int, int>>()); // Notice the type change here
+      expect((result as Left).value, equals(42));
+    });
   });
 
   group('tap', () {
@@ -180,23 +252,79 @@ void main() {
 
       expect(result, 'Right with value Hello');
     });
+  });
 
-    test('getOrElse with Left', () {
-      Either<int, String> leftEither = Left(42);
+  group('matchW function', () {
+    test('should handle Left correctly', () {
+      final either = Left<String, int>("Error");
+      final result = matchW<String, int, String, String>(
+        (error) => "Failed due to: $error",
+        (value) => "Success with value: $value",
+      )(either);
 
-      String result = getOrElse(leftEither, () => 'Default value');
-
-      expect(result, 'Default value');
+      expect(result, equals("Failed due to: Error"));
     });
 
-    test('getOrElse with Right', () {
-      Either<int, String> rightEither = Right('Hello');
+    test('should handle Right correctly', () {
+      final either = Right<String, int>(42);
+      final result = matchW<String, int, String, String>(
+        (error) => "Failed due to: $error",
+        (value) => "Success with value: $value",
+      )(either);
 
-      String result = getOrElse(rightEither, () => 'Default value');
+      expect(result, equals("Success with value: 42"));
+    });
 
-      expect(result, 'Hello');
+    test('should support consistent return types for Left and Right', () {
+      final eitherLeft = Left<String, int>("Error occurred");
+      final eitherRight = Right<String, int>(42);
+
+      final resultFromLeft = matchW<String, int, String, String>(
+        (error) => error, // Return the error string as-is
+        (value) => value.toString(), // Convert the int to a string
+      )(eitherLeft);
+
+      final resultFromRight = matchW<String, int, String, String>(
+        (error) => error, // Return the error string as-is
+        (value) => value.toString(), // Convert the int to a string
+      )(eitherRight);
+
+      expect(resultFromLeft, equals("Error occurred"));
+      expect(resultFromRight, equals("42"));
     });
   });
+
+  group('getOrElse', () {
+    // Test data
+    final Either<String, int> left = Left('error');
+    final Either<String, int> right = Right(10);
+
+    test('should return right value when provided with a Right', () {
+      final result = getOrElse<String, int>(() => -1)(right);
+      expect(result, 10);
+    });
+
+    test('should return default value when provided with a Left', () {
+      final result = getOrElse<String, int>(() => -1)(left);
+      expect(result, -1);
+    });
+
+    test('should execute default function only for Left', () {
+      int defaultFunctionCallCount = 0;
+
+      int defaultValueFunction() {
+        defaultFunctionCallCount++;
+        return -1;
+      }
+
+      getOrElse<String, int>(defaultValueFunction)(right);
+      expect(defaultFunctionCallCount, 0);
+
+      getOrElse<String, int>(defaultValueFunction)(left);
+      expect(defaultFunctionCallCount, 1);
+    });
+  });
+
   group('EitherEq', () {
     final eitherEq = getEq(eqString, eqInt);
 

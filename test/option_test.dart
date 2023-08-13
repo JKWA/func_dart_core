@@ -11,33 +11,33 @@ void main() {
   });
 
   test('map on Some applies function and returns Some', () {
-    var option = map(Some(5), (int x) => x * 2);
+    var option = map((int x) => x * 2)(Some(5));
     assert((option as Some<int>).value == 10);
   });
 
   test('map on None returns None', () {
-    var option = map(None<int>(), (int x) => x * 2);
+    var option = map((int x) => x * 2)(None<int>());
     expect(option is None<int>, true);
     assert(option is None<int>);
   });
 
   test('flatMap on Some applies function and returns the result', () {
-    var option = flatMap(Some(5), (int x) => Some(x * 2));
+    var option = flatMap((int x) => Some(x * 2))(Some(5));
     assert((option as Some<int>).value == 10);
   });
 
   test('flatMap on None returns None', () {
-    var option = flatMap(None<int>(), (int x) => Some(x * 2));
+    var option = flatMap((int x) => Some(x * 2))(None<int>());
     expect(option is None<int>, true);
     assert(option is None<int>);
   });
 
   test('ap on Some applies function and returns Some', () {
-    var result = ap(Some((int x) => x * 2), Some(10));
+    var result = ap(Some((int x) => x * 2))(Some(10));
 
-    var resultNoneF = ap(None<int Function(int)>(), Some(10));
+    var resultNoneF = ap(None<int Function(int)>())(Some(10));
 
-    var resultNoneM = ap(Some((int x) => x * 2), None<int>());
+    var resultNoneM = ap(Some((int x) => x * 2))(None<int>());
 
     assert((result as Some<int>).value == 20);
     expect(resultNoneF is None<int>, true);
@@ -78,28 +78,72 @@ void main() {
     });
   });
 
-  group('getOrElse', () {
-    test('should return the value if it is a Some', () {
-      final option = Some(5);
-      expect(getOrElse(option, () => 10), equals(5));
+  group('matchW - ', () {
+    test('Should return correct value for None', () {
+      var option = None<int>();
+      var result = matchW<int, int, String>(
+        () => "It's None",
+        (val) => "Value is $val",
+      )(option);
+      expect(result, "It's None");
     });
 
-    test('should return the result of the defaultFunction if it is a None', () {
-      final option = None<int>();
-      expect(getOrElse(option, () => 10), equals(10));
+    test('Should return correct value for Some', () {
+      var option = Some(42);
+      var result = matchW<int, int, String>(
+        () => "It's None",
+        (val) => "Value is $val",
+      )(option);
+      expect(result, "Value is 42");
     });
 
-    test('should lazily invoke defaultFunction', () {
-      bool functionWasCalled = false;
+    test('should handle different return types', () {
+      var option = Some(42);
+      var result = matchW<int, int, int>(
+        () => 0,
+        (val) => val + 1,
+      )(option);
+      expect(result, 43);
+    });
 
-      int defaultFunction() {
-        functionWasCalled = true;
-        return 10;
+    test('should handle complex types', () {
+      var option = Some([1, 2, 3]);
+      var result = matchW<List<int>, int, int>(
+        () => 0,
+        (val) => val.length,
+      )(option);
+      expect(result, 3);
+    });
+  });
+
+  group('Option getOrElse', () {
+    // Test data
+    final Option<int> none = None();
+    final Option<int> some = Some(10);
+
+    test('should return Some value when provided with a Some', () {
+      final result = getOrElse<int>(() => -1)(some);
+      expect(result, 10);
+    });
+
+    test('should return default value when provided with a None', () {
+      final result = getOrElse<int>(() => -1)(none);
+      expect(result, -1);
+    });
+
+    test('should execute default function only for None', () {
+      int defaultFunctionCallCount = 0;
+
+      int defaultValueFunction() {
+        defaultFunctionCallCount++;
+        return -1;
       }
 
-      final option = Some(5);
-      getOrElse(option, defaultFunction);
-      expect(functionWasCalled, isFalse);
+      getOrElse<int>(defaultValueFunction)(some);
+      expect(defaultFunctionCallCount, 0);
+
+      getOrElse<int>(defaultValueFunction)(none);
+      expect(defaultFunctionCallCount, 1);
     });
   });
   group('fromPredicate', () {
@@ -274,7 +318,7 @@ void main() {
 
     test('should traverse the list and apply the function to its elements', () {
       final list = il.ImmutableList<int>([2, 4, 6]);
-      final result = traverseList(doubleIfEven, list);
+      final result = traverseList(doubleIfEven)(list);
 
       expect(result, Some(il.ImmutableList<int>([4, 8, 12])));
     });
@@ -283,17 +327,17 @@ void main() {
         'should return None if any element in the list results in None when the function is applied',
         () {
       final list1 = il.ImmutableList<int>([2, 3, 4]);
-      final result1 = traverseList(doubleIfEven, list1);
+      final result1 = traverseList(doubleIfEven)(list1);
       expect(result1, None<il.ImmutableList<int>>());
 
       final list2 = il.ImmutableList<int>([1, 2, 3]);
-      final result2 = traverseList(doubleIfEven, list2);
+      final result2 = traverseList(doubleIfEven)(list2);
       expect(result2, None<il.ImmutableList<int>>());
     });
 
     test('should return Some with empty list if input list is empty', () {
       final list = il.ImmutableList<int>([]);
-      final result = traverseList(doubleIfEven, list);
+      final result = traverseList(doubleIfEven)(list);
 
       expect(result, Some(il.ImmutableList<int>([])));
     });

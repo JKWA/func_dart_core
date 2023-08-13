@@ -77,6 +77,15 @@ Option<B> of<B>(B value) {
   return Some<B>(value);
 }
 
+/// An alias for `of`, used to wrap the given value.
+///
+/// This function provides a convenient way to wrap a given value, making it
+/// easier to use or represent in certain situations.
+///
+/// Example usage:
+/// ```dart
+/// final wrappedValue = some<int>('Hello');  // This will wrap the 'Hello' value
+/// ```
 final some = of;
 
 /// Returns an [Option] based on the evaluation of a [Predicate] on a value.
@@ -121,64 +130,143 @@ Option<A> fromNullable<A>(A? value) {
   return value != null ? Some(value) : None();
 }
 
-/// Applies the function [f] to the value in the `Option` [option],
-/// if it is a `Some`. If [option] is `None`, returns `None`.
-/// This operation is known as 'map' in functional programming.
+/// A more generalized match function for `Option` that returns a value of a potentially different type.
 ///
-/// Example usage:
+/// This function facilitates pattern matching on an `Option<A>`, executing one of the provided functions
+/// based on whether the `Option` is a `Some` or `None`. It is more flexible than the standard `match` function
+/// by allowing the return types of `onSome` and `onNone` to differ.
+///
+/// Parameters:
+/// - `onNone`: A function that gets called if the `Option` is a `None`. It returns a value of type `C`.
+/// - `onSome`: A function that gets called if the `Option` is a `Some`. It accepts a value of type `A` and
+///             returns a value of type `C`.
+///
+/// Returns:
+/// - A function that accepts an `Option<A>` and returns a value of type `C`.
+///
+/// Example:
 /// ```dart
-/// final option1 = Some(5);
-/// final option2 = map(option1, (value) => value * 2);  // This will be Some(10)
-/// final option3 = map(None(), (value) => value * 2);  // This will be None
+/// final option = Some(5);
+/// final result = matchW<int, String, String>(
+///   () => "It's None",
+///   (value) => "Value is: $value"
+/// )(option);
+/// print(result);  // Outputs: Value is: 5
 /// ```
-Option<B> map<A, B>(Option<A> option, B Function(A) f) {
-  if (option is Some<A>) {
-    return Some<B>(f(option.value));
-  } else {
-    return None<B>();
-  }
+C Function(Option<A>) matchW<A, B, C>(
+        C Function() onNone, C Function(A) onSome) =>
+    (Option<A> option) =>
+        switch (option) { None() => onNone(), Some(value: var v) => onSome(v) };
+
+// C Function(Either<A, B>) match<A, B, C>(
+//     C Function(A) onLeft, C Function(B) onRight) {
+//   return (Either<A, B> either) => switch (either) {
+//         Left(value: var leftValue) => onLeft(leftValue),
+//         Right(value: var rightValue) => onRight(rightValue)
+//       };
+// }
+
+/// A pattern matching function for `Option` that provides branching based on the content of the `Option`.
+///
+/// This function facilitates pattern matching on an `Option<A>`, executing one of the provided functions
+/// based on whether the `Option` is a `Some` or `None`. Both `onSome` and `onNone` functions have the same
+/// return type in this variation of the match function.
+///
+/// Parameters:
+/// - `onNone`: A function that gets called if the `Option` is a `None`. It returns a value of type `B`.
+/// - `onSome`: A function that gets called if the `Option` is a `Some`. It accepts a value of type `A` and
+///             returns a value of type `B`.
+///
+/// Returns:
+/// - A function that accepts an `Option<A>` and returns a value of type `B`.
+///
+/// Example:
+/// ```dart
+/// final option = Some(5);
+/// final result = match<int, String>(
+///   () => "It's None",
+///   (value) => "Value is: $value"
+/// )(option);
+/// print(result);  // Outputs: Value is: 5
+/// ```
+B Function(Option<A>) match<A, B>(B Function() onNone, B Function(A) onSome) {
+  return matchW<A, B, B>(onNone, onSome);
 }
 
-/// Applies the function [f] to the value in the `Option` [option],
-/// if it is a `Some`, and assumes [f] returns an `Option`.
-/// If [option] is `None`, returns `None`.
-/// This operation is known as 'flatMap', 'chain', or 'bind' in functional programming.
+/// Alias for [match].
 ///
-/// Example usage:
+/// Provides a way to handle an [Option] by executing a function based on its value.
+final fold = match;
+
+/// Transforms the value inside an [Option] using a given function.
+///
+/// The `map` function is used to apply a transformation to the value wrapped inside an [Option].
+/// If the input [Option] is [None], the result will also be [None].
+/// If the input [Option] contains a value, the transformation function will be applied to that value,
+/// and the transformed value will be wrapped in a [Some] instance.
+///
+/// Example:
 /// ```dart
-/// final option1 = Some(5);
-/// final option2 = flatMap(option1, (value) => Some(value * 2));  // This will be Some(10)
-/// final option3 = flatMap(None(), (value) => Some(value * 2));  // This will be None
+/// Option<int> someValue = Some(5);
+///
+/// var squared = map<int, int>((x) => x * x)(someValue);  // Should result in Some(25)
+///
+/// var noneInput = map<int, int>((x) => x + 5)(None());   // Should result in None
 /// ```
-Option<B> flatMap<A, B>(Option<A> option, Option<B> Function(A) f) {
-  if (option is Some<A>) {
-    return f(option.value);
-  } else {
-    return None<B>();
-  }
-}
+///
+/// @param f A function that takes a value of type `A` and returns a value of type `B`.
+/// @return A function that takes an [Option] of type `A` and returns an [Option] of type `B`.
+Option<B> Function(Option<A> p1) map<A, B>(B Function(A) f) =>
+    match<A, Option<B>>(() => None<B>(), (a) => Some<B>(f(a)));
+
+/// Transforms the value inside an [Option] using a function that returns an [Option].
+///
+/// `flatMap` is used to apply a function that returns an [Option] to the value wrapped inside another [Option].
+/// If the input [Option] is [None], the result will also be [None].
+/// If the input [Option] contains a value, the function will be applied to that value, and the resulting [Option] is returned.
+///
+/// Example:
+/// ```dart
+/// Option<int> someValue = Some(10);
+///
+/// var doubled = flatMap<int, int>((x) => Some(x * 2))(someValue);  // Should result in Some(20)
+///
+/// var noneResult = flatMap<int, int>((x) => None())(someValue);    // Should result in None
+///
+/// var noneInput = flatMap<int, int>((x) => Some(x + 5))(None());  // Should result in None
+/// ```
+///
+/// @param f A function that takes a value of type `A` and returns an [Option] of type `B`.
+/// @return A function that takes an [Option] of type `A` and returns an [Option] of type `B`.
+Option<B> Function(Option<A>) flatMap<A, B>(Option<B> Function(A) f) =>
+    match<A, Option<B>>(() => None<B>(), (a) => f(a));
 
 /// Alias for [flatMap].
 ///
 /// Provides a way to handle an [Option] by chaining function calls.
 final chain = flatMap;
 
-/// Applies the function wrapped in an `Option` [fOpt] to the value in the `Option` [m],
-/// if both [fOpt] and [m] are `Some`, and wraps the result in an `Option`.
-/// If either [fOpt] or [m] is `None`, returns `None`.
-/// This operation is known as 'ap' or 'apply' in functional programming.
+/// Applies a function wrapped in an [Option] to a value also wrapped in an [Option].
 ///
-/// Example usage:
+/// Given an [Option] of a function, and an [Option] of a value, it will return an
+/// [Option] of the result. If either the function or the value is [None], the result will also be [None].
+///
+/// Example:
 /// ```dart
-/// final option1 = Some((value) => value * 2);
-/// final option2 = Some(5);
-/// final option3 = ap(option1, option2);  // This will be Some(10)
+/// Option<int Function(int)> someFunction = Some((int x) => x * 2);
+/// Option<int> someValue = Some(10);
+///
+/// var result = ap(someFunction)(someValue);  // Should result in Some(20)
+///
+/// Option<int Function(int)> noFunction = None();
+///
+/// var resultWithNoneFunction = ap(noFunction)(someValue);  // Should result in None
 /// ```
-Option<B> ap<A, B>(Option<B Function(A)> fOpt, Option<A> m) {
-  return flatMap(fOpt, (B Function(A) f) {
-    return map(m, f);
-  });
-}
+///
+/// @param fOpt An [Option] containing a function of type `B Function(A)`.
+/// @return A function that takes an [Option] of type `A` and returns an [Option] of type `B`.
+Option<B> Function(Option<A>) ap<A, B>(Option<B Function(A)> fOpt) =>
+    (Option<A> m) => flatMap<B Function(A), B>((f) => map<A, B>(f)(m))(fOpt);
 
 /// The [tap] function takes a side effect function [Function] that is applied to the value
 /// inside the [Some] instance of [Option]. It returns the original [Option] after
@@ -244,56 +332,31 @@ TapFunction<A> tap<A>(void Function(A) f) {
 /// Provides a side effect function [Function] that is applied to the value
 final chainFirst = tap;
 
-//// A function to process an `Option` value using Dart's pattern matching.
-/// If [Option] is an instance of `Some`, the function [onSome] will be invoked
-/// with the encapsulated value. If [Option] is `None`, then [onNone] will be called.
+/// Returns a function that, when provided with an `Option<A>`,
+/// will yield the value inside if it's a `Some`,
+/// or the result of the `defaultFunction` if it's a `None`.
 ///
-/// The updated Dart version supports pattern matching for generic classes,
-/// allowing for expressive and concise handling of `Option` types without the need
-/// for manual type checks.
+/// The returned function acts as a safe way to extract a value from
+/// an `Option`, providing a fallback mechanism when dealing with `None` values.
 ///
-/// This function provides a clean and structured way to handle both variants of `Option`.
-/// The returned function takes an `Option<A>` and returns a value of type `B`.
-///
-/// Example usage:
+/// Usage:
 /// ```dart
-/// final option1 = Some(5);
-/// final option2 = None();
-/// final matchFn = match(() => "It's None", (value) => "It's Some with value: $value");
-/// print(matchFn(option1));  // Prints: It's Some with value: 5
-/// print(matchFn(option2));  // Prints: It's None
+/// final option1 = Some(10);
+/// final option2 = None<int>();
+/// final fallback = () => 5;
+///
+/// final value1 = getOrElse(fallback)(option1); // returns 10
+/// final value2 = getOrElse(fallback)(option2); // returns 5
 /// ```
-B Function(Option<A>) match<A, B>(B Function() onNone, B Function(A) onSome) {
-  return (Option<A> option) => switch (option) {
-        Some(value: var val) => onSome(val),
-        None() => onNone()
-      };
-}
-
-/// Alias for [match].
 ///
-/// Provides a way to handle an [Option] by executing a function based on its value.
-final fold = match;
-
-/// Returns the value from [option] if it is a `Some`.
-/// Otherwise, it returns the result of invoking [defaultFunction].
+/// Parameters:
+/// - `defaultFunction`: A function that returns a value of type `A`.
+///   This value will be returned if the provided `Option` is a `None`.
 ///
-/// The [defaultFunction] is a callback that is lazily invoked, which means it is not run
-/// until needed, specifically when [option] is a `None`.
-///
-/// Example:
-/// ```dart
-/// final option1 = Some(5);
-/// print(getOrElse(option1, () => 10));  // Prints: 5
-///
-/// final option2 = None();
-/// print(getOrElse(option2, () => 10));  // Prints: 10
-/// ```
-A getOrElse<A>(Option<A> option, A Function() defaultFunction) {
-  if (option is Some<A>) {
-    return option.value;
-  }
-  return defaultFunction();
+/// Returns:
+/// A function expecting an `Option<A>` and returning a value of type `A`.
+A Function(Option<A>) getOrElse<A>(A Function() defaultFunction) {
+  return match<A, A>(() => defaultFunction(), (someValue) => someValue);
 }
 
 /// Defines equality for instances of `Option`.
@@ -378,17 +441,11 @@ class OptionOrd<A> extends Ord<Option<A>> {
 
           switch (x) {
             case None():
-              if (y is Some<A>) return -1;
-              return 0;
+              return (y is Some<A>) ? -1 : 0;
 
             case Some(value: var someValueX):
-              switch (y) {
-                case None():
-                  return 1;
-
-                case Some(value: var someValueY):
-                  return ord.compare(someValueX, someValueY);
-              }
+              return match<A, int>(() => 1,
+                  (someValueY) => ord.compare(someValueX, someValueY))(y);
           }
         });
 
@@ -479,10 +536,10 @@ Option<il.ImmutableList<A>> sequenceList<A>(il.ImmutableList<Option<A>> list) {
 ///
 /// ### Parameters:
 /// - `fn`: A function that takes a value of type `A` and returns an `Option` of type `B`.
-/// - `list`: An `ImmutableList` of values to be mapped using the function `fn`.
 ///
 /// ### Returns:
-/// An `Option` containing an `ImmutableList` of the mapped values.
+/// A curried function that takes an `ImmutableList` of values of type `A` and returns
+/// an `Option` containing an `ImmutableList` of the mapped values of type `B`.
 /// Returns `None` if the result of mapping any input value is `None`.
 ///
 /// ### Examples:
@@ -490,24 +547,29 @@ Option<il.ImmutableList<A>> sequenceList<A>(il.ImmutableList<Option<A>> list) {
 /// ```dart
 /// var listOfInts = il.ImmutableList<int>([1, 2, 3]);
 /// Option<int> addOne(int x) => Some(x + 1);
-/// var result = traverseList(addOne, listOfInts);
+/// var traverseFn = traverseList(addOne);
+/// var result = traverseFn(listOfInts);
 /// print(result); // Outputs: Some(ImmutableList([2, 3, 4]))
 /// ```
 ///
 /// ```dart
 /// Option<int> returnNoneForThree(int x) => x == 3 ? None() : Some(x);
-/// var resultWithNone = traverseList(returnNoneForThree, listOfInts);
+/// var traverseFnWithNone = traverseList(returnNoneForThree);
+/// var resultWithNone = traverseFnWithNone(listOfInts);
 /// print(resultWithNone); // Outputs: None
-/// ```
-Option<il.ImmutableList<B>> traverseList<A, B>(
-    Option<B> Function(A) fn, il.ImmutableList<A> list) {
-  return list.fold(Some(il.ImmutableList<B>([])),
-      (Option<il.ImmutableList<B>> acc, A item) {
-    Option<B> mappedItem = fn(item);
-    if (acc is Some<il.ImmutableList<B>> && mappedItem is Some<B>) {
-      return Some(il.append(mappedItem.value)(acc.value));
-    } else {
-      return None<il.ImmutableList<B>>();
-    }
-  });
+/// ````
+Option<il.ImmutableList<B>> Function(il.ImmutableList<A>) traverseList<A, B>(
+    Option<B> Function(A) fn) {
+  Option<il.ImmutableList<B>> foldFn(Option<il.ImmutableList<B>> acc, A item) {
+    return match<il.ImmutableList<B>, Option<il.ImmutableList<B>>>(
+        () => None<il.ImmutableList<B>>(), (il.ImmutableList<B> accList) {
+      Option<B> resultOption = fn(item);
+      return match<B, Option<il.ImmutableList<B>>>(
+          () => None<il.ImmutableList<B>>(),
+          (B value) => Some(il.append(value)(accList)))(resultOption);
+    })(acc);
+  }
+
+  return il.foldLeft<A, Option<il.ImmutableList<B>>>(
+      Some(il.ImmutableList<B>([])))(foldFn);
 }

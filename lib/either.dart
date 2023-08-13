@@ -80,14 +80,6 @@ Either<A, B> of<A, B>(B value) {
   return Right<A, B>(value);
 }
 
-// C Function(Either<A, B>) match<A, B, C>(
-//     C Function(A) onLeft, C Function(B) onRight) {
-//   return (Either<A, B> either) => switch (either) {
-//         Left(value: var leftValue) => onLeft(leftValue),
-//         Right(value: var rightValue) => onRight(rightValue)
-//       };
-// }
-
 /// Swaps the inner types of an `Either` value.
 ///
 /// If the provided `Either` is a `Left`, the resulting value will be a `Right`
@@ -157,69 +149,221 @@ Either<A, B> Function(Option<B> option) fromOption<A, B>(
     (Option<B> option) =>
         option is Some<B> ? right<A, B>(option.value) : left<A, B>(leftValue());
 
-/// Maps the [either] `Either<A, B>` to `Either<A, C>` by applying the function [f] if [either] is `Right`.
+/// Matches the given [Either] value and returns the result of the respective handler.
 ///
-/// Example usage:
-/// ```dart
-/// final either = right<int, String>('Hello');
-/// final result = map(either, (value) => value.length);
-/// print(result);  // This will print Right(5)
+/// The `matchW` function provides a flexible way to handle `Either` types by allowing
+/// the user to specify different return types for the `Left` and `Right` cases.
+/// This allows for broader use-cases compared to the regular `match`.
+///
+/// * The [onLeft] handler is called when the given [Either] is of type `Left<A>`.
+/// * The [onRight] handler is called when the given [Either] is of type `Right<B>`.
+///
+/// Usage:
 /// ```
-Either<A, C> map<A, B, C>(Either<A, B> either, C Function(B) f) {
-  switch (either) {
-    case Right(value: var rightValue):
-      return Right<A, C>(f(rightValue));
-    case Left(value: var leftValue):
-      return Left<A, C>(leftValue);
-  }
+/// var either = Left<String, int>("Error");
+/// var result = matchW<String, int, String, String>(
+///   (error) => "Failed with $error",
+///   (value) => "Success with $value"
+/// )(either);
+/// print(result); // "Failed with Error"
+/// ```
+///
+/// [onLeft] and [onRight] handlers can return different types, defined by `C` and `D` respectively.
+///
+/// Parameters:
+/// * [onLeft] - The handler function to be called if the [Either] is of type `Left<A>`.
+/// * [onRight] - The handler function to be called if the [Either] is of type `Right<B>`.
+///
+/// Returns:
+/// A function that accepts an [Either<A, B>] and returns a value of type `D`.
+D Function(Either<A, B>) matchW<A, B, C, D>(
+        D Function(A) onLeft, D Function(B) onRight) =>
+    (Either<A, B> either) => switch (either) {
+          Left(value: var leftValue) => onLeft(leftValue),
+          Right(value: var rightValue) => onRight(rightValue)
+        };
+
+/// Matches an [Either<A, B>] to execute a function based on its Left or Right value.
+/// Using Dart's pattern matching, the [match] function provides an expressive
+/// and concise way to handle `Either` values without manual type checks.
+///
+/// The returned function uses pattern matching on [Either<A, B>] and invokes
+/// the relevant function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
+///
+/// Example:
+///
+/// ```dart
+/// void main() {
+///   final right = Right(5);
+///   final left = Left("Error");
+///   final matchFn = match(
+///     (error) => "It's Left with value: $error",
+///     (value) => "It's Right with value: $value"
+///   );
+///   print(matchFn(right));  // Prints: It's Right with value: 5
+///   print(matchFn(left));  // Prints: It's Left with value: Error
+/// }
+/// ```
+C Function(Either<A, B>) match<A, B, C>(
+    C Function(A) onLeft, C Function(B) onRight) {
+  return matchW<A, B, C, C>(onLeft, onRight);
 }
 
-/// Applies the function [f] to the value in the `Either` [either],
-/// if it is a `Right`, and assumes [f] returns an `Either`.
-/// If [either] is `Left`, returns `Left`.
+// B Function(Either<A, B>) matchQ<A, B>(B Function() onLeft, B Function(A) onRight) {
+//   return matchW<A, B, C, C>(onLeft, onRight);
+// }
+
+/// Alias for [match].
 ///
-/// Example usage:
+/// Provides a way to handle an [Either] by executing a function based on its value.
+final fold = match;
+
+/// Maps over the `Either` type.
+///
+/// Transforms an `Either<A, B>` into an `Either<A, C>` by applying the given function `fn` to the inner value if it's of type `Right<B>`.
+/// If the `Either` is a `Left<A>`, it returns the same `Left<A>` without any modification.
+///
+/// ### Example:
+///
+/// Consider you have an `Either` that can be an integer error code or a valid string:
+///
 /// ```dart
-/// final either = right<int, String>('Hello');
-/// final result = flatMap(either, (value) => right<int, int>(value.length));
-/// print(result);  // This will print Right(5)
+/// Either<int, String> name = Right("Alice");
 /// ```
-Either<A, C> flatMap<A, B, C>(Either<A, B> either, Either<A, C> Function(B) f) {
-  switch (either) {
-    case Right(value: var rightValue):
-      return f(rightValue);
-    case Left(value: var leftValue):
-      return Left<A, C>(leftValue);
-  }
-}
+///
+/// You can use the `map` function to change the inner value of this `Either`:
+///
+/// ```dart
+/// final result = map<int, String, int>((s) => s.length)(name);
+///
+/// if (result is Right<int>) {
+///   print("Name length is ${result.value}");
+/// } else if (result is Left<int>) {
+///   print("Error code: ${result.value}");
+/// }
+/// ```
+///
+/// In this example, since `name` is `Right("Alice")`, the output will be:
+///
+/// ```
+/// Name length is 5
+/// ```
+///
+/// If `name` was a `Left<int>`, say `Left(404)`, the output would be:
+///
+/// ```
+/// Error code: 404
+/// ```
+///
+/// @param fn The function to map over the inner value.
+/// @return A function that takes in an `Either<A, B>` and returns an `Either<A, C>`.
+Either<A, C> Function(Either<A, B> either) map<A, B, C>(C Function(B) fn) =>
+    match<A, B, Either<A, C>>(
+        (left) => Left<A, C>(left), (right) => Right<A, C>(fn(right)));
+
+/// FlatMaps over the `Either` type.
+///
+/// Transforms an `Either<A, B>` into an `Either<A, C>` by applying the given function `fn` to the inner value if it's of type `Right<B>`.
+/// If the `Either` is a `Left<A>`, it returns the same `Left<A>` without any modification.
+///
+/// ### Example:
+///
+/// Consider you have an `Either` that can be an integer error code or a valid string:
+///
+/// ```dart
+/// Either<int, String> name = Right("Alice");
+/// ```
+///
+/// You can use the `flatMap` function to derive another `Either` based on this value:
+///
+/// ```dart
+/// final result = flatMap<int, String, int>((s) => s == "Alice" ? Right(s.length) : Left(-1))(name);
+///
+/// if (result is Right<int>) {
+///   print("Name length is ${result.value}");
+/// } else if (result is Left<int>) {
+///   print("Error code: ${result.value}");
+/// }
+/// ```
+///
+/// In this example, since `name` is `Right("Alice")`, the output will be:
+///
+/// ```
+/// Name length is 5
+/// ```
+///
+/// If `name` was any other `Right<String>` value, the output would be:
+///
+/// ```
+/// Error code: -1
+/// ```
+///
+/// If `name` was a `Left<int>`, say `Left(404)`, the output would be:
+///
+/// ```
+/// Error code: 404
+/// ```
+///
+/// @param fn The function to apply on the inner value.
+/// @return A function that takes in an `Either<A, B>` and returns an `Either<A, C>`.
+Either<A, C> Function(Either<A, B>) flatMap<A, B, C>(
+        Either<A, C> Function(B) fn) =>
+    match<A, B, Either<A, C>>((a) => Left<A, C>(a), fn);
 
 /// Alias for [flatMap].
 final chain = flatMap;
 
-/// Applies the function wrapped in an `Either` [fEither] to the value in the `Either` [m],
-/// if both [fEither] and [m] are `Right`, and wraps the result in an `Either`.
-/// If either [fEither] or [m] is `Left`, returns `Left`.
+/// Applies a function inside an `Either` to a value inside another `Either`.
 ///
-/// Example usage:
+/// This function takes an `Either` that may contain a function of type `B Function(C)` and applies it to a value inside another `Either` of type `Either<A, C>`.
+/// If the first `Either` is a `Left<A>`, the resultant `Either` will also be a `Left<A>`.
+/// If the second `Either` is a `Left<A>`, the resultant `Either` will also be a `Left<A>`, irrespective of the first `Either`'s value.
+///
+/// ### Example:
+///
+/// Given an `Either` that might contain a function:
+///
 /// ```dart
-/// final fEither = right<int, String Function(int)>((value) => 'Hello $value');
-/// final m = right<int, int>(42);
-/// final result = ap(fEither, m);
-/// print(result);  // This will print Right('Hello 42')
+/// Either<int, int Function(String)> fnEither = Right((s) => s.length);
 /// ```
-Either<A, B> ap<A, B, C>(Either<A, B Function(C)> fEither, Either<A, C> m) {
-  switch (fEither) {
-    case Left(value: var leftFuncValue):
-      return Left<A, B>(leftFuncValue);
-    case Right(value: var func):
-      switch (m) {
-        case Left(value: var leftValue):
-          return Left<A, B>(leftValue);
-        case Right(value: var rightValue):
-          return Right<A, B>(func(rightValue));
-      }
-  }
-}
+///
+/// And another `Either` that might contain a string:
+///
+/// ```dart
+/// Either<int, String> valueEither = Right("Bob");
+/// ```
+///
+/// You can use the `ap` function to apply the function inside `fnEither` to the value inside `valueEither`:
+///
+/// ```dart
+/// final result = ap(fnEither)(valueEither);
+///
+/// if (result is Right<int>) {
+///   print("String length is ${result.value}");
+/// } else if (result is Left<int>) {
+///   print("Error code: ${result.value}");
+/// }
+/// ```
+///
+/// In this example, the output will be:
+///
+/// ```
+/// String length is 3
+/// ```
+///
+/// If either `fnEither` or `valueEither` were a `Left<int>`, the output would display the error code.
+///
+/// @param fEither The `Either` that may contain a function of type `B Function(C)`.
+/// @return A function that takes an `Either<A, C>` and returns an `Either<A, B>`.
+Either<A, B> Function(Either<A, C>) ap<A, B, C>(
+        Either<A, B Function(C)> fEither) =>
+    (Either<A, C> m) => switch (fEither) {
+          Left(value: var leftFuncValue) => Left<A, B>(leftFuncValue),
+          Right(value: var func) => switch (m) {
+              Left(value: var leftValue) => Left<A, B>(leftValue),
+              Right(value: var rightValue) => Right<A, B>(func(rightValue))
+            }
+        };
 
 typedef TapFunction<A, B> = Either<A, B> Function(Either<A, B> either);
 
@@ -250,57 +394,32 @@ TapFunction<A, B> tap<A, B>(void Function(B) f) {
 /// Provides a side effect function [Function] that is applied to the value
 final chainFirst = tap;
 
-/// Matches an [Either<A, B>] to execute a function based on its Left or Right value.
-/// Using Dart's pattern matching, the [match] function provides an expressive
-/// and concise way to handle `Either` values without manual type checks.
+/// Returns a function that, when provided with an `Either<A, B>`,
+/// will yield the value inside if it's a `Right`,
+/// or the result of the `defaultFunction` if it's a `Left`.
 ///
-/// The returned function uses pattern matching on [Either<A, B>] and invokes
-/// the relevant function (`onLeft` for `Left` or `onRight` for `Right`) based on the match.
+/// The returned function acts as a safe way to extract a value from
+/// an `Either`, providing a fallback mechanism when dealing with `Left` values.
 ///
-/// Example:
-///
+/// Usage:
 /// ```dart
-/// void main() {
-///   final right = Right(5);
-///   final left = Left("Error");
-///   final matchFn = match(
-///     (error) => "It's Left with value: $error",
-///     (value) => "It's Right with value: $value"
-///   );
-///   print(matchFn(right));  // Prints: It's Right with value: 5
-///   print(matchFn(left));  // Prints: It's Left with value: Error
-/// }
+/// final either1 = Right<String, int>(10);
+/// final either2 = Left<String, int>("Error");
+/// final fallback = () => 5;
+///
+/// final value1 = getOrElse(fallback)(either1); // returns 10
+/// final value2 = getOrElse(fallback)(either2); // returns 5
 /// ```
-C Function(Either<A, B>) match<A, B, C>(
-    C Function(A) onLeft, C Function(B) onRight) {
-  return (Either<A, B> either) => switch (either) {
-        Left(value: var leftValue) => onLeft(leftValue),
-        Right(value: var rightValue) => onRight(rightValue)
-      };
-}
-
-/// Alias for [match].
 ///
-/// Provides a way to handle an [Either] by executing a function based on its value.
-final fold = match;
-
-/// Gets the value of the Right if it exists, otherwise returns a default value.
+/// Parameters:
+/// - `defaultFunction`: A function that returns a value of type `B`.
+///   This value will be returned if the provided `Either` is a `Left`.
 ///
-/// Example:
-///
-/// ```dart
-/// void main() {
-///   final right = Right(5);
-///   final left = Left("Error");
-///   print(getOrElse(right, () => 0));  // Prints: 5
-///   print(getOrElse(left, () => 0));  // Prints: 0
-/// }
-/// ```
-B getOrElse<A, B>(Either<A, B> either, B Function() defaultFunction) {
-  if (either is Right<A, B>) {
-    return either.value;
-  }
-  return defaultFunction();
+/// Returns:
+/// A function expecting an `Either<A, B>` and returning a value of type `B`.
+B Function(Either<A, B>) getOrElse<A, B>(B Function() defaultFunction) {
+  return match<A, B, B>(
+      (leftValue) => defaultFunction(), (rightValue) => rightValue);
 }
 
 /// Defines equality for instances of `Either`.

@@ -51,3 +51,13 @@
 
 - Update README
 - Add CONTRIBUTING.md
+
+## 0.6.0
+
+- (breaking change) - Update treverseList to curry list
+- (breaking change) - Update getOrElse to curry value
+- (breaking change) - Update map to curry value
+- (breaking change) - Update flatMap/chain to curry value
+- (breaking change) - Update ap to curry value
+- Refactor sequenceList to reuse match
+- Add matchW
