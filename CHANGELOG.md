@@ -62,3 +62,8 @@
 - (breaking change) - Remove refinements from TaskEither
 - Refactor sequenceList to reuse match
 - Add matchW
+
+## 0.6.1
+
+- (breaking change) - Update identity functions to curry
+- Add identity fold, reduce and foldMap
