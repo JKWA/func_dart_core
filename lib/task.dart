@@ -30,48 +30,6 @@ class _Task<A> implements Task<A> {
   Future<A> call() => _task();
 }
 
-/// Transforms the result of a task using a function `f`.
-///
-/// Example:
-/// ```dart
-/// Task<int> sampleTask = Task<int>(() => Future.value(10));
-/// Task<int> newTask = map(sampleTask, (value) => value + 10);
-/// ```
-Task<B> map<A, B>(Task<A> task, B Function(A) f) {
-  return Task<B>(() async => f(await task.task()));
-}
-
-/// Transforms the result of a task using a function `f` that
-/// returns a new task.
-///
-/// Example:
-/// ```dart
-/// Task<int> sampleTask = Task<int>(() => Future.value(10));
-/// Task<int> newTask = flatMap(sampleTask, (value) => Task<int>(() => Future.value(value + 10)));
-/// ```
-Task<B> flatMap<A, B>(Task<A> task, Task<B> Function(A) f) {
-  return Task<B>(() async => (await (f(await task.task())).task()));
-}
-
-/// Alias for [flatMap].
-///
-/// Provides a way to handle an [Task] by chaining function calls.final chain = flatMap;
-final chain = flatMap;
-
-/// Transforms the result of a task using a function contained in another task.
-///
-/// Example:
-/// ```dart
-/// Task<int> sampleTask = Task<int>(() => Future.value(10));
-/// Task<int Function(int)> functionTask = Task<int Function(int)>(() => Future.value((value) => value * 2));
-/// Task<int> newTask = ap(functionTask, sampleTask);
-/// ```
-Task<B> ap<A, B>(Task<B Function(A)> fTask, Task<A> m) {
-  return flatMap(fTask, (B Function(A) f) {
-    return map(m, f);
-  });
-}
-
 /// Constructs a task that resolves to a given value.
 ///
 /// Example:
@@ -81,6 +39,59 @@ Task<B> ap<A, B>(Task<B Function(A)> fTask, Task<A> m) {
 Task<B> of<B>(B value) {
   return Task<B>(() => Future.value(value));
 }
+
+/// Maps over a [Task] by applying the provided function [fn] to its result.
+///
+/// Given a function [fn] that transforms a value of type [A] to a value of type [B],
+/// and a [Task] that will eventually produce a value of type [A],
+/// this function returns a new [Task] that will eventually produce a value of type [B].
+///
+/// Example:
+/// ```dart
+/// Task<int> sampleTask = Task(() => Future.value(5));
+/// Task<String> mappedTask = map<int, String>((int value) => 'Value is: $value')(sampleTask);
+/// ```
+Task<B> Function(Task<A> task) map<A, B>(B Function(A) fn) {
+  return (Task<A> task) {
+    return Task<B>(() async => fn(await task.task()));
+  };
+}
+
+/// Flat-maps over a [Task] by applying the provided function [fn] to its result.
+///
+/// Given a function [fn] that takes a value of type [A] and returns a [Task] of type [B],
+/// and a [Task] that will eventually produce a value of type [A],
+/// this function returns a new [Task] that will eventually produce a value of type [B].
+///
+/// Example:
+/// ```dart
+/// Task<int> sampleTask = Task(() => Future.value(5));
+/// Task<String> flatMappedTask = flatMap<int, String>((int value) => Task(() => Future.value('Value is: $value')))(sampleTask);
+/// ```
+Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A) fn) =>
+    (Task<A> task) =>
+        Task<B>(() async => (await (fn(await task.task())).task()));
+
+/// Alias for [flatMap].
+///
+/// Provides a way to handle an [Task] by chaining function calls.final chain = flatMap;
+final chain = flatMap;
+
+/// Applies the function inside a [Task] to the value inside another [Task].
+///
+/// Given a [Task] containing a function from [A] to [B] (`fTask`)
+/// and another [Task] containing a value of type [A] (`m`),
+/// this function returns a new [Task] that will eventually produce
+/// a value of type [B] by applying the function to the value.
+///
+/// Example:
+/// ```dart
+/// Task<int Function(String)> funcTask = Task(() => Future.value((String s) => s.length));
+/// Task<String> valueTask = Task(() => Future.value("Hello"));
+/// Task<int> resultTask = ap(funcTask)(valueTask);
+/// ```
+Task<B> Function(Task<A> task) ap<A, B>(Task<B Function(A)> fTask) =>
+    (Task<A> m) => Task<B>(() async => (await fTask.task())(await m.task()));
 
 /// Returns the same task given as argument.
 ///

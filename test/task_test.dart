@@ -10,86 +10,120 @@ void main() {
 
     expect(await task.task(), value);
   });
-  group('Task map - ', () {
-    test('should transform Task<int> to Task<String>', () async {
-      var task = Task<int>(() => Future.value(10));
-      var mappedTask = map(task, (a) => 'Number $a');
+  group('map', () {
+    test('should transform task result from int to string', () async {
+      final addOne = map<int, String>((x) => (x + 1).toString());
 
-      expect(await mappedTask.task(), 'Number 10');
+      final task = Task(() async => 5);
+      final transformedTask = addOne(task);
+
+      final result = await transformedTask.task();
+      expect(result, '6');
     });
 
-    test('should transform Task<List<int>> to Task<int> (length of list)',
+    test('should transform task result from double to int', () async {
+      final halfToInt = map<double, int>((x) => x.toInt());
+
+      final task = Task(() async => 3.5);
+      final transformedTask = halfToInt(task);
+
+      final result = await transformedTask.task();
+      expect(result, 3);
+    });
+
+    test('should transform task result from string to uppercase', () async {
+      final uppercase = map<String, String>((s) => s.toUpperCase());
+
+      final task = Task(() async => 'hello');
+      final transformedTask = uppercase(task);
+
+      final result = await transformedTask.task();
+      expect(result, 'HELLO');
+    });
+  });
+
+  group('flatMap', () {
+    test('should flatMap task result from int to string task', () async {
+      final stringify = flatMap<int, String>((x) {
+        final stringValue = x.toString();
+        return Task(() async => stringValue);
+      });
+
+      final task = Task(() async => 5);
+      final flatMappedTask = stringify(task);
+
+      final result = await flatMappedTask.task();
+      expect(result, '5');
+    });
+
+    test('should flatMap task result from int to double task', () async {
+      final doubleValue = flatMap<int, double>((x) {
+        final doubleValue = x.toDouble();
+        return Task(() async => doubleValue);
+      });
+
+      final task = Task(() async => 10);
+      final flatMappedTask = doubleValue(task);
+
+      final result = await flatMappedTask.task();
+      expect(result, 10.0);
+    });
+
+    test('should flatMap task result from string to length task', () async {
+      final lengthTask = flatMap<String, int>((s) {
+        return Task(() async => s.length);
+      });
+
+      final task = Task(() async => 'hello');
+      final flatMappedTask = lengthTask(task);
+
+      final result = await flatMappedTask.task();
+      expect(result, 5);
+    });
+  });
+
+  group('ap - ', () {
+    test('should apply function wrapped in Task to value wrapped in Task',
         () async {
-      var task = Task<List<int>>(() => Future.value([1, 2, 3, 4, 5]));
-      var mappedTask = map(task, (a) => a.length);
-
-      expect(await mappedTask.task(), 5);
+      final taskFunction = Task<int Function(int)>(
+          () async => (int x) => x + 5); // Task wrapping a function that adds 5
+      final taskValue = Task<int>(() async => 10); // Task wrapping a value 10
+      final resultTask = ap(taskFunction)(taskValue);
+      expect(await resultTask.task(), 15);
     });
 
-    test('should handle exceptions and preserve them', () async {
-      var task = Task<int>(() => Future.error(Exception('Test exception')));
-      var mappedTask = map(task, (a) => 'Number $a');
-
-      try {
-        await mappedTask.task();
-      } catch (e) {
-        expect(e, isException);
-      }
-    });
-  });
-  group('Task flatMap - ', () {
-    test('should transform Task<int> to Task<String>', () async {
-      var task = Task<int>(() => Future.value(10));
-      var flatMappedTask =
-          flatMap(task, (a) => Task<String>(() => Future.value('Number $a')));
-
-      expect(await flatMappedTask.task(), 'Number 10');
+    test('identity function should not modify the task', () async {
+      final taskFunction = Task<int Function(int)>(
+          () async => (int x) => x); // Task wrapping identity function
+      final taskValue = Task<int>(() async => 10); // Task wrapping a value 10
+      final resultTask = ap(taskFunction)(taskValue);
+      expect(await resultTask.task(), 10);
     });
 
-    test('should transform Task<List<int>> to Task<int> (length of list)',
-        () async {
-      var task = Task<List<int>>((() => Future.value([1, 2, 3, 4, 5])));
-      var flatMappedTask =
-          flatMap(task, (a) => Task<int>(() => Future.value(a.length)));
-
-      expect(await flatMappedTask.task(), 5);
-    });
-
-    test('should handle exceptions and preserve them', () async {
-      var task = Task<int>(() => Future.error(Exception('Test exception')));
-      var flatMappedTask =
-          flatMap(task, (a) => Task<String>(() => Future.value('Number $a')));
-
-      try {
-        await flatMappedTask.task();
-      } catch (e) {
-        expect(e, isException);
-      }
+    test('should handle async delays', () async {
+      final taskFunction = Task<int Function(int)>(() async {
+        await Future.delayed(
+            Duration(milliseconds: 50), () => (int x) => x * 2);
+        return (int x) => x * 2;
+      });
+      final taskValue = Task<int>(() async => 20);
+      final resultTask = ap(taskFunction)(taskValue);
+      expect(await resultTask.task(), 40);
     });
   });
-  group('Task ap - ', () {
-    test('should apply Task<B Function(A)> to Task<A>', () async {
-      var taskF = Task<int Function(String)>(
-          () => Future.value((String a) => int.parse(a)));
-      var task = Task<String>(() => Future.value("10"));
-      var apTask = ap(taskF, task);
 
-      expect(await apTask.task(), 10);
+  test('ap with async failures', () async {
+    final taskFunction = Task<int Function(int)>(() async {
+      await Future<void>.delayed(Duration(milliseconds: 50));
+      return (int x) => x * 2;
     });
-
-    test('should handle exceptions and preserve them', () async {
-      var taskF = Task<int Function(String)>(
-          () => Future.error(Exception('Test exception')));
-      var task = Task<String>(() => Future.value("10"));
-      var apTask = ap(taskF, task);
-
-      try {
-        await apTask.task();
-      } catch (e) {
-        expect(e, isException);
-      }
+    final taskValue = Task<int>(() async {
+      throw Exception('Sample error');
     });
+    final resultTask = ap(taskFunction)(taskValue);
+    expect(resultTask.task(), throwsA(isA<Exception>()));
   });
+
   test('fromTask should return the same Task', () async {
     var task = Task<int>(() => Future.value(10));
     var sameTask = fromTask(task);
@@ -97,7 +131,7 @@ void main() {
     expect(await sameTask.task(), await task.task());
   });
 
-  group('Task tap - ', () {
+  group('tap - ', () {
     test('tap should create a side effect without changing the Task', () async {
       var value = 10;
       var task = Task<int>(() => Future.value(value));
