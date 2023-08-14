@@ -73,34 +73,13 @@ Validator<UserData> validateUserName = (UserData user) {
           (error) => Left(error), (_) => Right(user)));
 };
 
-// List of all validators for UserData.
-final userValidators = [validateUserAge, validateUserName];
-
-// Combine multiple UserData validators.
-Validator<UserData> combineUserValidators(
-    List<Validator<UserData>> validators) {
-  return (UserData user) {
-    List<String> errors = [];
-
-    for (var validator in validators) {
-      final result = validator(user);
-
-      if (result is Left<Error, UserData>) {
-        errors.addAll(result.value);
-      }
-    }
-
-    return errors.isEmpty ? Right(user) : Left(nel.of(errors));
-  };
-}
-
 // Helper function to transform validation results into readable strings.
 final parseToString =
     match((left) => 'Fail: $left', (right) => 'Success: $right');
 
 // Define the final pipeline: validate and then transform the result.
-final parseValidUser =
-    flow2(combineUserValidators(userValidators), parseToString);
+final parseValidUser = flow2(
+    applySequentially([validateUserAge, validateUserName]), parseToString);
 
 void main() {
   // Sample Users:
