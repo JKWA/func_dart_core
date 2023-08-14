@@ -67,3 +67,7 @@
 
 - (breaking change) - Update identity functions to curry
 - Add identity fold, reduce and foldMap
+
+## 0.6.2
+
+- (breaking change) - Update getOrElse, fromOption, and fromPredicate TaskEither functions to curry

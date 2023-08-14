@@ -214,50 +214,52 @@ void main() {
     });
   });
 
-  group('TaskEither - fromPredicateTaskEither', () {
-    bool isEven(int value) => value % 2 == 0;
-    final String errorMessage = "Not even!";
+  group('fromPredicate', () {
+    test('should return Right if predicate is true', () async {
+      bool predicate(int value) => value > 5;
+      String leftValue() => "Less than or equal to 5";
+      final taskEitherFunction =
+          fromPredicate<String, int>(predicate, leftValue);
 
-    final fromPredicate = fromPredicateTaskEither<String, int>(
-      isEven,
-      () => errorMessage,
-    );
+      final result = await taskEitherFunction(6).value();
 
-    test('should return a right value if predicate is true', () async {
-      final result = fromPredicate(4); // 4 is even.
-      final eitherResult = await result.value();
-
-      expect(eitherResult, isA<e.Right<String, int>>());
-      expect((eitherResult as e.Right<String, int>).value, 4);
+      expect(result, isA<e.Right<String, int>>());
+      expect((result as e.Right<String, int>).value, 6);
     });
 
-    test('should return a left value if predicate is false', () async {
-      final result = fromPredicate(5); // 5 is not even.
-      final eitherResult = await result.value();
+    test('should return Left if predicate is false', () async {
+      bool predicate(int value) => value > 5;
+      String leftValue() => "Less than or equal to 5";
+      final taskEitherFunction =
+          fromPredicate<String, int>(predicate, leftValue);
 
-      expect(eitherResult, isA<e.Left<String, int>>());
-      expect((eitherResult as e.Left<String, int>).value, errorMessage);
+      final result = await taskEitherFunction(4).value();
+
+      expect(result, isA<e.Left<String, int>>());
+      expect((result as e.Left<String, int>).value, "Less than or equal to 5");
     });
   });
-  group('TaskEither - fromOption', () {
-    final String errorMessage = "No value present";
+  group('fromOption', () {
+    late TaskEither<String, int> Function(o.Option<int>) taskEitherGenerator;
 
-    test('should return a right value if Option is Some', () async {
-      final option = o.Some<int>(42);
-      final result = fromOption(option, () => errorMessage);
-      final eitherResult = await result.value();
-
-      expect(eitherResult, isA<e.Right<String, int>>());
-      expect((eitherResult as e.Right<String, int>).value, 42);
+    setUp(() {
+      taskEitherGenerator = fromOption<String, int>(() => "None was provided");
     });
 
-    test('should return a left value if Option is None', () async {
-      final option = o.None<int>();
-      final result = fromOption(option, () => errorMessage);
-      final eitherResult = await result.value();
+    test('returns TaskEither with Right value when Option is Some', () async {
+      final result = taskEitherGenerator(o.Some(5));
+      final either = await result.value();
 
-      expect(eitherResult, isA<e.Left<String, int>>());
-      expect((eitherResult as e.Left<String, int>).value, errorMessage);
+      expect(either, isA<e.Right<String, int>>());
+      expect((either as e.Right<String, int>).value, 5);
+    });
+
+    test('returns TaskEither with Left value when Option is None', () async {
+      final result = taskEitherGenerator(o.None<int>());
+      final either = await result.value();
+
+      expect(either, isA<e.Left<String, int>>());
+      expect((either as e.Left<String, int>).value, "None was provided");
     });
   });
 
@@ -324,7 +326,7 @@ void main() {
     test('should provide a default value for a Left value', () async {
       final te = left<String, int>('Error');
 
-      final result = await getOrElse(te, (leftValue) => 0);
+      final result = await getOrElse((leftValue) => 0)(te);
 
       expect(result, 0);
     });
@@ -332,7 +334,7 @@ void main() {
     test('should return the Right value when present', () async {
       final te = right<String, int>(42);
 
-      final result = await getOrElse(te, (leftValue) => 0);
+      final result = await getOrElse((leftValue) => 0)(te);
 
       expect(result, 42);
     });

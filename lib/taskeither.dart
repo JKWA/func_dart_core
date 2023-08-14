@@ -267,63 +267,88 @@ TapFunctionEither<A, B> tap<A, B>(void Function(B) f) {
 /// Alias for tap.
 final chainFirst = tap;
 
-/// Creates a `TaskEither` from a predicate and value.
-/// Returns `Right` if predicate passes, otherwise returns `Left` with a provided error value.
+/// Creates a [TaskEither] based on a predicate function.
 ///
-/// Example:
+/// This function evaluates a given predicate using the provided value. If the
+/// predicate evaluates to `true`, the result is a [TaskEither] that resolves to
+/// a [e.Right] with the same value. If the predicate evaluates to `false`, the result
+/// is a [TaskEither] that resolves to a [e.Left] with the value produced by the `leftValue` function.
+///
+/// ```dart
+/// /// Example:
+/// final predicate = (int value) => value > 5;
+/// final leftValue = () => "Less than or equal to 5";
+/// final taskEitherFunction = fromPredicate<String, int>(predicate, leftValue);
+///
+/// taskEitherFunction(6).value().then((result) {
+///   if (result is e.Right) {
+///     print(result.value); // Outputs: 6
+///   } else if (result is e.Left) {
+///     print(result.value); // This line won't execute for the value 6
+///   }
+/// });
+///
+/// taskEitherFunction(4).value().then((result) {
+///   if (result is e.Right) {
+///     print(result.value); // This line won't execute for the value 4
+///   } else if (result is e.Left) {
+///     print(result.value); // Outputs: "Less than or equal to 5"
+///   }
+/// });
 /// ```
-/// final checkPositive = fromPredicateTaskEither<String, int>(
-///     (num) => num > 0,
-///     () => "Number is not positive"
-/// );
-/// final result = checkPositive(5); // Right(5)
+///
+/// [A]: The type of the left value.
+/// [B]: The type of the right value and the input value.
+///
+/// Returns a function that takes a value of type [B] and produces a [TaskEither] of [A] or [B].
+TaskEither<A, B> Function(B value) fromPredicate<A, B>(
+  Predicate<B> predicate,
+  A Function() leftValue,
+) {
+  return (B value) =>
+      predicate(value) ? right<A, B>(value) : left<A, B>(leftValue());
+}
+
+/// Converts an [o.Option<B>] into a [TaskEither<A, B>] based on whether the option contains a value or not.
+///
+/// If the option is of type [o.Some], the resulting [TaskEither] will contain the encapsulated value of type `B`
+/// in its [e.Right] side. If the option is of type [o.None], the provided function `leftValue` will be invoked
+/// and its result will be wrapped in the [e.Left] side of the resulting [TaskEither].
+///
+/// This allows transforming optional values into asynchronous computations that can produce either a value or an error.
+///
+/// Usage:
+/// ```dart
+/// final maybeValue = o.Some(5);
+/// final fallback = () => "No value found";
+/// final taskEither = fromOption<int, String>(fallback)(maybeValue);
+///
+/// // If `maybeValue` was o.Some(5), `taskEither` will now contain a Right with value 5.
+/// // If `maybeValue` was o.None(), `taskEither` will contain a Left with the result of `fallback`.
 /// ```
-TaskEither<A, B> Function(B value) fromPredicateTaskEither<A, B>(
-    Predicate<B> predicate, A Function() leftValue) {
-  return (B value) {
-    if (predicate(value)) {
-      return right<A, B>(value);
-    } else {
-      return left<A, B>(leftValue());
-    }
+TaskEither<A, B> Function(o.Option<B> option) fromOption<A, B>(
+        A Function() leftValue) =>
+    (o.Option<B> option) => option is o.Some<B>
+        ? right<A, B>(option.value)
+        : left<A, B>(leftValue());
+
+/// Retrieves the value from a [TaskEither<A, B>], or produces a default value if it's a [e.Left].
+///
+/// Usage:
+/// ```dart
+/// final taskEither = TaskEither.value(e.Right<int, int>(5));
+/// final result = await getOrElse<int, int>((error) => -1)(taskEither);
+///
+/// // `result` will be 5 if `taskEither` contains a Right(5), or -1 if it contains a Left.
+/// ```
+Future<B> Function(TaskEither<A, B>) getOrElse<A, B>(
+    B Function(A) defaultValue) {
+  return (TaskEither<A, B> taskEither) async {
+    final result = await taskEither.value();
+    return result is e.Left<A, B>
+        ? defaultValue(result.value)
+        : (result as e.Right<A, B>).value;
   };
-}
-
-/// Converts an `Option` into a `TaskEither`, providing a default `Left` value for `None`.
-///
-/// Example:
-/// ```
-/// final myOption = o.Some(10);
-/// final result = fromOption<String, int>(myOption, () => "No value");
-/// ```
-TaskEither<A, B> fromOption<A, B>(o.Option<B> option, A Function() leftValue) {
-  return TaskEither<A, B>(() async {
-    switch (option) {
-      case o.Some(value: var someValue):
-        return e.Right<A, B>(someValue);
-      case o.None():
-        return e.Left<A, B>(leftValue());
-    }
-  });
-}
-
-/// Extracts the value from `Right` or provides a default value for `Left`.
-///
-/// Example:
-/// ```
-/// final myTask = left<String, int>("Error");
-/// final value = await getOrElse(myTask, (error) => 0); // 0
-/// ```
-Future<B> getOrElse<A, B>(
-    TaskEither<A, B> taskEither, B Function(A) defaultValue) async {
-  final result = await taskEither.value();
-
-  switch (result) {
-    case e.Left(value: var leftValue):
-      return defaultValue(leftValue);
-    case e.Right(value: var rightValue):
-      return rightValue;
-  }
 }
 
 /// Sequences a list of `TaskEither` into a single `TaskEither` that produces a list of results.
